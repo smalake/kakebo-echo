@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  golang:
+    build:
+      context: .
+      dockerfile: ./build/package/golang/Dockerfile
+    container_name: kakebo_echo_golang
+    volumes:
+      - ./:/go/src/kakebo-echo
+    environment:
+      - TZ=Asia/Tokyo
+    ports:
+      - "8080:8080"
