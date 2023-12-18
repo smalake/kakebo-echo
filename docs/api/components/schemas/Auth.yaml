@@ -1,0 +1,38 @@
+JWT:
+  type: object
+  properties:
+    token:
+      type: string
+AuthMail:
+  type: object
+  properties:
+    mail:
+      type: string
+    password:
+      type: string
+  required:
+    - mail
+    - password
+AuthGoogle:
+  type: object
+  properties:
+    mail:
+      type: string
+  required:
+    - mail
+Register:
+  type: object
+  properties:
+    mail:
+      type: string
+    password:
+      type: string
+    name:
+      type: string
+    type:
+      type: integer
+  required:
+    - mail
+    - password
+    - name
+    - type

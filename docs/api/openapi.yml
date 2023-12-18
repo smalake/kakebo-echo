@@ -1,0 +1,886 @@
+openapi: "3.0.3"
+info:
+  version: "0.0.1"
+  title: kakebo-echo
+  description: 家計簿用APIのIF仕様書
+servers:
+  - url: "https://{host}:{port}"
+    description: 本番環境
+  - url: "https://{hostStage}:{portStage}"
+    description: stage環境
+  - url: "http://localhost:{portLocal}"
+    description: ローカル環境
+tags:
+  - name: auth
+    description: 認証関連のパッケージ
+  - name: event
+    description: 共有イベント関連のパッケージ
+  - name: private
+    description: プレイベートイベント関連のパッケージ
+  - name: pattern
+    description: カテゴリーパターン関連のパッケージ
+  - name: setting
+    description: 設定関連のパッケージ
+  - name: health
+    description: ヘルスチェック用
+paths:
+  /login-mail:
+    post:
+      tags: # パッケージ名
+        - auth
+      operationId: loginMail # メソッド名
+      summary: メールアドレスでログイン
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthMail"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWT"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /login-google:
+    post:
+      tags: # パッケージ名
+        - auth
+      operationId: loginGoogle # メソッド名
+      summary: Googleアカウントでログイン
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthGoogle"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWT"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /logout:
+    get:
+      tags:
+        - auth
+      operationId: logout
+      summary: ログアウト処理
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /register:
+    post:
+      tags: # パッケージ名
+        - auth
+      operationId: register # メソッド名
+      summary: ユーザの新規登録
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWT"
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /join:
+    post:
+      tags: # パッケージ名
+        - auth
+      operationId: join # メソッド名
+      summary: 共有グループに参加
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /get_name/${group}:
+    get:
+      tags: # パッケージ名
+        - auth
+      operationId: getParentName # メソッド名
+      summary: 参加するグループの親のユーザ名を取得
+      parameters:
+        - name: group
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParentName"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /login-check:
+    get:
+      tags: # パッケージ名
+        - auth
+      operationId: loginCheck # メソッド名
+      summary: ログインしているかチェック
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parent:
+                    type: boolean
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth-code:
+    post:
+      tags: # パッケージ名
+        - auth
+      operationId: authCode # メソッド名
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthCode"
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /resend-code:
+    get:
+      tags: # パッケージ名
+        - auth
+      operationId: resendCode # メソッド名
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /event:
+    post:
+      tags: # パッケージ名
+        - event
+      operationId: create # メソッド名
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEvent"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventId"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags: # パッケージ名
+        - event
+      operationId: getAll # メソッド名
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllEvent"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /event/${id}:
+    put:
+      tags: # パッケージ名
+        - event
+      operationId: update # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEvent"
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags: # パッケージ名
+        - event
+      operationId: getOne # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OneEvent"
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: # パッケージ名
+        - event
+      operationId: delete # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /revision:
+    get:
+      tags:
+        - event
+      operationId: revision
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Revision"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /private:
+    get:
+      tags: # パッケージ名
+        - private
+      operationId: getAll # メソッド名
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllEvent"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /private/${id}:
+    put:
+      tags: # パッケージ名
+        - private
+      operationId: update # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEvent"
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags: # パッケージ名
+        - private
+      operationId: getOne # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OneEvent"
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: # パッケージ名
+        - private
+      operationId: delete # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /pattern:
+    get:
+      tags:
+        - pattern
+      operationId: get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllPattern"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - pattern
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pattern"
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /pattern/${id}:
+    put:
+      tags: # パッケージ名
+        - pattern
+      operationId: update # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pattern"
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: # パッケージ名
+        - pattern
+      operationId: delete # メソッド名
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /display-name:
+    get:
+      tags: # パッケージ名
+        - setting
+      operationId: get # メソッド名
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+        "422":
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: # パッケージ名
+        - setting
+      operationId: update # メソッド名
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /invite:
+    get:
+      tags:
+        - setting
+      operationId: invite
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /is-parent:
+    get:
+      tags:
+        - setting
+      operationId: isParent
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IsParent"
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /send-mail:
+    post:
+      tags:
+        - setting
+      operationId: sendMail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMail"
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /health-check:
+    get:
+      tags:
+        - health
+      operationId: healthCheck
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    Auth:
+      $ref: "components/schemas/Auth.yaml"
+    ParentName:
+      type: object
+      properties:
+        name:
+          type: string
+    AuthCode:
+      type: object
+      properties:
+        email:
+          type: string
+        code:
+          type: integer
+      required:
+        - email
+        - code
+    CreateEvent:
+      type: object
+      properties:
+        amount1:
+          type: integer
+        amount2:
+          type: integer
+        category1:
+          type: integer
+        category2:
+          type: integer
+        memo1:
+          type: string
+        memo2:
+          type: string
+        storeName:
+          type: integer
+        date:
+          type: string
+      required:
+        - amount1
+        - category1
+        - memo1
+        - date
+    EventId:
+      type: object
+      properties:
+        eventId:
+          type: integer
+    AllEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: integer
+        category:
+          type: integer
+        storeName:
+          type: string
+        date:
+          type: string
+    OneEvent:
+      type: object
+      properties:
+        amount:
+          type: integer
+        category:
+          type: integer
+        storeName:
+          type: string
+        memo:
+          type: string
+        date:
+          type: string
+        createUser:
+          type: string
+        updateUser:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    UpdateEvent:
+      type: object
+      properties:
+        amount:
+          type: integer
+        category:
+          type: integer
+        storeName:
+          type: string
+        memo:
+          type: string
+        date:
+          type: string
+      required:
+        - amount
+        - category
+        - storeName
+        - memo
+        - date
+    Revision:
+      type: object
+      properties:
+        revision:
+          type: integer
+    AllPattern:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: integer
+        storeName:
+          type: string
+    Pattern:
+      type: object
+      properties:
+        storeName:
+          type: string
+        category:
+          type: integer
+      required:
+        - storeName
+        - category
+    IsParent:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    SendMail:
+      type: object
+      properties:
+        parent:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
