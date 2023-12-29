@@ -1,0 +1,87 @@
+CreateEvent:
+  type: object
+  properties:
+    amount1:
+      type: integer
+    amount2:
+      type: integer
+    category1:
+      type: integer
+    category2:
+      type: integer
+    memo1:
+      type: string
+    memo2:
+      type: string
+    storeName:
+      type: integer
+    date:
+      type: string
+  required:
+    - amount1
+    - category1
+    - memo1
+    - date
+EventId:
+  type: object
+  properties:
+    eventId:
+      type: integer
+AllEvent:
+  type: object
+  properties:
+    id:
+      type: integer
+    amount:
+      type: integer
+    category:
+      type: integer
+    storeName:
+      type: string
+    date:
+      type: string
+OneEvent:
+  type: object
+  properties:
+    amount:
+      type: integer
+    category:
+      type: integer
+    storeName:
+      type: string
+    memo:
+      type: string
+    date:
+      type: string
+    createUser:
+      type: string
+    updateUser:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+UpdateEvent:
+  type: object
+  properties:
+    amount:
+      type: integer
+    category:
+      type: integer
+    storeName:
+      type: string
+    memo:
+      type: string
+    date:
+      type: string
+  required:
+    - amount
+    - category
+    - storeName
+    - memo
+    - date
+Revision:
+  type: object
+  properties:
+    revision:
+      type: integer

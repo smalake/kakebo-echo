@@ -1,0 +1,19 @@
+AllPattern:
+  type: object
+  properties:
+    id:
+      type: integer
+    category:
+      type: integer
+    storeName:
+      type: string
+Pattern:
+  type: object
+  properties:
+    storeName:
+      type: string
+    category:
+      type: integer
+  required:
+    - storeName
+    - category

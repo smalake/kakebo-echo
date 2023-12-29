@@ -36,3 +36,18 @@ Register:
     - password
     - name
     - type
+ParentName:
+  type: object
+  properties:
+    name:
+      type: string
+AuthCode:
+  type: object
+  properties:
+    email:
+      type: string
+    code:
+      type: integer
+  required:
+    - email
+    - code

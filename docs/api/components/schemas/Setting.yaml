@@ -1,0 +1,14 @@
+IsParent:
+  type: object
+  properties:
+    email:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+SendMail:
+  type: object
+  properties:
+    parent:
+      type: boolean

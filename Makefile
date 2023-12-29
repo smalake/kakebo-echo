@@ -10,4 +10,4 @@ logs:
 	docker-compose logs
 
 gen-api:
-	./tools/codegen.sh ${TAGS}
+	./tools/codegen.sh
