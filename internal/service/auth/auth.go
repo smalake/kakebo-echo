@@ -95,6 +95,11 @@ func (s *Service) RegisterUser(ctx echo.Context) structs.HttpResponse {
 	return structs.HttpResponse{Code: 200}
 }
 
+// ログアウト
+func (s *Service) Logout(ctx echo.Context) structs.HttpResponse {
+	return structs.HttpResponse{Code: 200}
+}
+
 // トークン発行
 func issueToken(id int) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)

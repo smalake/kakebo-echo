@@ -29,4 +29,5 @@ func SetRoute(e *echo.Echo) {
 
 	api := e.Group("/api/v1")
 	api.Use(middleware.JWT([]byte("secret")))
+	api.POST("/logout", service.LogoutHandler)
 }
