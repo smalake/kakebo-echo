@@ -1,6 +1,6 @@
 package health
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 
 type HealthInterface interface {
 	// (GET /health-check)

@@ -2,9 +2,11 @@ package mysql
 
 import (
 	"fmt"
-	"kakebo-echo/internal/env"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+
+	"kakebo-echo/internal/env"
 )
 
 type Client struct {
@@ -32,4 +34,8 @@ func NewClient() (*Client, error) {
 		DB: db,
 	}
 	return c, nil
+}
+
+func (c *Client) Close() error {
+	return c.DB.Close()
 }

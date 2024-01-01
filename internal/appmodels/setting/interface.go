@@ -1,6 +1,6 @@
 package setting
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 
 type IsParent struct {
 	Email       string `json:"email"`
