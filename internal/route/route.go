@@ -1,12 +1,17 @@
 package route
 
 import (
+	"errors"
+	"net/http"
+
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
 	"kakebo-echo/internal/appmodels"
 	"kakebo-echo/internal/service"
 	"kakebo-echo/pkg/mysql"
-
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func SetRoute(e *echo.Echo) {
@@ -28,6 +33,21 @@ func SetRoute(e *echo.Echo) {
 	e.POST("/register", service.RegisterUserHandler)
 
 	api := e.Group("/api/v1")
-	api.Use(middleware.JWT([]byte("secret")))
+	api.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte("secret"),
+	}))
+
+	// JWT認証
+	api.GET("/", func(c echo.Context) error {
+		token, ok := c.Get("user").(*jwt.Token) // by default token is stored under `user` key
+		if !ok {
+			return errors.New("JWT token missing or invalid")
+		}
+		claims, ok := token.Claims.(jwt.MapClaims) // by default claims is of type `jwt.MapClaims`
+		if !ok {
+			return errors.New("failed to cast claims as jwt.MapClaims")
+		}
+		return c.JSON(http.StatusOK, claims)
+	})
 	api.POST("/logout", service.LogoutHandler)
 }
