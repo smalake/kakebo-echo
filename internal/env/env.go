@@ -19,6 +19,14 @@ type MysqlConfig struct {
 	Port     int
 }
 
+type PostgresConfig struct {
+	DBName   string
+	UserName string
+	Password string
+	Host     string
+	Port     int
+}
+
 // func Load() Environment error {
 // 	var e Environment
 // 	e.Mysql = setMysqlConfig()
@@ -37,5 +45,20 @@ func SetMysqlConfig() error {
 	Mc.Password = os.Getenv("MYSQL_PASSWORD")
 	Mc.Host = os.Getenv("MYSQL_HOST")
 	Mc.Port, _ = strconv.Atoi(os.Getenv("MYSQL_PORT"))
+	return nil
+}
+
+var Pc PostgresConfig
+
+func SetPostgresConfig() error {
+	err := godotenv.Load(".env")
+	if err != nil {
+		return err
+	}
+	Pc.DBName = os.Getenv("POSTGRES_NAME")
+	Pc.UserName = os.Getenv("POSTGRES_USER")
+	Pc.Password = os.Getenv("POSTGRES_PASSWORD")
+	Pc.Host = os.Getenv("POSTGRES_HOST")
+	Pc.Port, _ = strconv.Atoi(os.Getenv("POSTGRES_PORT"))
 	return nil
 }

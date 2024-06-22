@@ -4,14 +4,8 @@ type UserID struct {
 	ID int `json:"id" db:"id"`
 }
 
-type LoginMailInfo struct {
-	ID       int    `json:"id" db:"id"`
-	Password string `json:"password" db:"password"`
-}
-
-type LoginMailRequest struct {
-	Email    string `json:"email" db:"email"`
-	Password string `json:"password" db:"password"`
+type LoginRequest struct {
+	Uid string `json:"uid" db:"uid"`
 }
 
 type LoginGoogleRequest struct {
@@ -19,7 +13,7 @@ type LoginGoogleRequest struct {
 }
 
 type RegisterUserRequest struct {
-	Email    string `json:"email" db:"email"`
-	Password string `json:"password" db:"password"`
-	Name     string `json:"name" db:"name"`
+	Uid  string `json:"uid" db:"uid"`
+	Name string `json:"name" db:"name"`
+	Type int    `json:"type" db:"type"`
 }

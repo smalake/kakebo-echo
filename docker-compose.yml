@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   golang:
@@ -6,29 +6,31 @@ services:
       context: .
       dockerfile: ./build/package/golang/Dockerfile
     container_name: kakebo_echo_golang
-    volumes:
-      - ./:/go/src/kakebo-echo
     environment:
       - TZ=Asia/Tokyo
+    volumes:
+      - ./:/go/src/kakebo-echo
     ports:
-      - "8080:8080"
+      - '8080:8080'
     depends_on:
       - db
 
   db:
-    platform: linux/amd64
-    image: mysql:5.7.38
-    container_name: echo_mysql
-    environment:
-      MYSQL_USER: root
-      MYSQL_PASSWORD: local_password
-      MYSQL_ROOT_PASSWORD: local_password
-      TZ: "Asia/Tokyo"
-    volumes:
-      - echo-db-data:/var/lib/mysql
+    image: postgres
+    container_name: postgres
     ports:
-      - 3306:3306
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=local_user
+      - POSTGRES_PASSWORD=local_password
+    tty: true
+    restart: always
+    user: root
+    volumes:
+      - postgresdb:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+      - /etc/localtime:/etc/localtime:ro
 
 volumes:
-  echo-db-data:
+  postgresdb:
+    driver: local

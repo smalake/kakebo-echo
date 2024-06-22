@@ -9,6 +9,7 @@ ENV GODEBUG=madvdontneed=1
 WORKDIR /go/src/kakebo-echo
 
 ENV GO111MODULE=on
+ENV GOOGLE_APPLICATION_CREDENTIALS=/go/src/kakebo-echo/build/package/golang/google-key.json
 
 # RUN go mod init kakebo-echo && go get -u github.com/cosmtrek/air@latest
 RUN go install github.com/cosmtrek/air@v1.41.0

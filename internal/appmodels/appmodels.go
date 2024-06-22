@@ -1,13 +1,13 @@
 package appmodels
 
 import (
-	"kakebo-echo/pkg/mysql"
+	"kakebo-echo/pkg/postgresql"
 )
 
 type AppModel struct {
-	MysqlCli *mysql.Client
+	PsgrCli *postgresql.Client
 }
 
-func New(mysqlCli *mysql.Client) *AppModel {
-	return &AppModel{MysqlCli: mysqlCli}
+func New(psgrCli *postgresql.Client) *AppModel {
+	return &AppModel{PsgrCli: psgrCli}
 }

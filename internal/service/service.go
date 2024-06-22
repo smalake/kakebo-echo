@@ -16,16 +16,16 @@ func New(am *appmodels.AppModel) *Service {
 }
 
 // Auth関連
-func (s Service) LoginGoogleHandler(ctx echo.Context) error {
+func (s Service) LoginHandler(ctx echo.Context) error {
 	service := auth.New(&s.appModel)
-	res := service.LoginGoogle(ctx)
+	res := service.Login(ctx)
 
 	return ResponseHandler(ctx, res)
 }
 
-func (s Service) LoginMailHandler(ctx echo.Context) error {
+func (s Service) LoginCheckHandler(ctx echo.Context) error {
 	service := auth.New(&s.appModel)
-	res := service.LoginMail(ctx)
+	res := service.LoginCheck(ctx)
 
 	return ResponseHandler(ctx, res)
 }

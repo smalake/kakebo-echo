@@ -1,15 +1,15 @@
 package auth
 
 import (
+	"errors"
 	"kakebo-echo/internal/appmodels"
-	"kakebo-echo/pkg/mysql"
+	"kakebo-echo/pkg/postgresql"
 	"kakebo-echo/pkg/structs"
 	"kakebo-echo/pkg/user"
+	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
@@ -20,57 +20,25 @@ func New(appModel *appmodels.AppModel) *Service {
 	return &Service{appModel: *appModel}
 }
 
-// メールアドレスでログイン
-func (s *Service) LoginMail(ctx echo.Context) structs.HttpResponse {
+// ログイン処理（FirebaseのUIDがusersテーブルに登録されているかチェック）
+func (s *Service) Login(ctx echo.Context) structs.HttpResponse {
 	// POSTからログイン情報を取得
-	u := new(user.LoginMailRequest)
+	u := new(user.LoginRequest)
 	if err := ctx.Bind(u); err != nil {
 		return structs.HttpResponse{Code: 400, Error: err}
 	}
 
-	query := mysql.LoginMail
-	var uid user.LoginMailInfo
-	err := s.appModel.MysqlCli.DB.Get(&uid, query, u.Email)
+	// UIDがDBに登録されているかチェック
+	query := postgresql.CheckUserByUid
+	var uidCount int
+	err := s.appModel.PsgrCli.DB.Get(&uidCount, query, u.Uid)
 	if err != nil {
 		return structs.HttpResponse{Code: 500, Error: err}
 	}
-
-	if err := compareHashAndPassword(uid.Password, u.Password); err != nil {
-		// 認証エラー
-		return structs.HttpResponse{Code: 401, Error: err}
+	if uidCount == 0 {
+		return structs.HttpResponse{Code: 401, Message: "Unregistered User"}
 	}
-
-	// トークンを発行
-	token, err := issueToken(uid.ID)
-	if err != nil {
-		return structs.HttpResponse{Code: 500, Error: err}
-	}
-
-	return structs.HttpResponse{Code: 200, Data: map[string]string{"accessToken": token}}
-}
-
-// Googleアカウントでログイン
-func (s *Service) LoginGoogle(ctx echo.Context) structs.HttpResponse {
-	// POSTからログイン情報を取得
-	u := new(user.LoginGoogleRequest)
-	if err := ctx.Bind(u); err != nil {
-		return structs.HttpResponse{Code: 400, Error: err}
-	}
-
-	query := mysql.LoginGoogle
-	var uid user.UserID
-	err := s.appModel.MysqlCli.DB.Get(&uid, query, u.Email)
-	if err != nil {
-		return structs.HttpResponse{Code: 500, Error: err}
-	}
-
-	// トークンを発行
-	token, err := issueToken(uid.ID)
-	if err != nil {
-		return structs.HttpResponse{Code: 500, Error: err}
-	}
-
-	return structs.HttpResponse{Code: 200, Data: map[string]string{"accessToken": token}}
+	return structs.HttpResponse{Code: 200}
 }
 
 // ユーザ登録
@@ -81,15 +49,41 @@ func (s *Service) RegisterUser(ctx echo.Context) structs.HttpResponse {
 		return structs.HttpResponse{Code: 400, Error: err}
 	}
 
-	// パスワードをハッシュ化
-	password, err := passwordEncrypt(u.Password)
+	// トランザクション開始
+	tx, err := s.appModel.PsgrCli.DB.Beginx()
 	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to transaction: %+v", err)
 		return structs.HttpResponse{Code: 500, Error: err}
 	}
 
-	query := mysql.RegisterUser
-	_, err = s.appModel.MysqlCli.DB.Exec(query, u.Email, password, u.Name)
+	// グループ作成
+	var groupQuery = postgresql.CreateGroup
+	var groupId int
+	err = tx.QueryRowx(groupQuery, time.Now(), time.Now()).Scan(&groupId)
 	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to CREATE group: %+v", err)
+		_ = tx.Rollback()
+		return structs.HttpResponse{Code: 500, Error: err}
+	}
+
+	//ユーザ作成
+	query := postgresql.RegisterUser
+	_, err = tx.Exec(query, u.Uid, u.Name, groupId, u.Type, time.Now(), time.Now())
+	if err != nil {
+		_ = tx.Rollback()
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			ctx.Logger().Errorf("[ERROR] ユーザがすでに登録されています: %+v", err)
+			return structs.HttpResponse{Code: 409, Error: errors.New("ユーザがすでに登録されています")}
+		} else {
+			ctx.Logger().Errorf("[FATAL] ユーザ登録に失敗しました: %+v", err)
+			return structs.HttpResponse{Code: 500, Error: err}
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to commit: %+v", err)
+		_ = tx.Rollback()
 		return structs.HttpResponse{Code: 500, Error: err}
 	}
 	return structs.HttpResponse{Code: 200}
@@ -100,27 +94,18 @@ func (s *Service) Logout(ctx echo.Context) structs.HttpResponse {
 	return structs.HttpResponse{Code: 200}
 }
 
-// トークン発行
-func issueToken(id int) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["id"] = id
-	claims["iat"] = time.Now().Unix()                     // 発行時間
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // 有効期限
-	t, err := token.SignedString([]byte("secret"))
+// ログイン確認
+func (s *Service) LoginCheck(ctx echo.Context) structs.HttpResponse {
+	uid := ctx.Get("uid")
+	// JWTから取得したUIDがDBに登録されているかチェック
+	query := postgresql.CheckUserByUid
+	var loginCheck LoginCheck
+	err := s.appModel.PsgrCli.DB.Get(&loginCheck, query, uid)
 	if err != nil {
-		return "", err
+		return structs.HttpResponse{Code: 500, Error: err}
 	}
-	return t, nil
-}
-
-// パスワードのハッシュ化
-func passwordEncrypt(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(hash), err
-}
-
-// ハッシュ化されたパスワードとの比較(returnがnilならログイン成功)
-func compareHashAndPassword(hash, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if !loginCheck.GroupAdmin.Valid {
+		return structs.HttpResponse{Code: 401, Message: "Unregistered User"}
+	}
+	return structs.HttpResponse{Code: 200, Data: map[string]interface{}{"parent": loginCheck.GroupAdmin.Int32}}
 }
