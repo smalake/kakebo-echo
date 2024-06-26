@@ -4,9 +4,9 @@ import (
 	// Import Echo v4.
 
 	"kakebo-echo/internal/appmodels"
-	"kakebo-echo/internal/service"
+	"kakebo-echo/internal/handler"
+	"kakebo-echo/pkg/database/postgresql"
 	mdl "kakebo-echo/pkg/middleware"
-	"kakebo-echo/pkg/postgresql"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -36,14 +36,14 @@ func main() {
 	// defer mc.Close()
 
 	appModel := appmodels.New(pc)
-	service := service.New(appModel)
+	service := handler.NewAuthHandler(appModel)
 	e.POST("/login", service.LoginHandler)
 	e.POST("/register", service.RegisterUserHandler)
 
 	api := e.Group("/api/v1")
-
 	// JWT認証
 	api.Use(mdl.JwtDecode)
+
 	api.GET("/login-check", service.LoginCheckHandler)
 	api.POST("/logout", service.LogoutHandler)
 
