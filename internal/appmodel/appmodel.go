@@ -1,7 +1,7 @@
-package appmodels
+package appmodel
 
 import (
-	"kakebo-echo/pkg/postgresql"
+	"kakebo-echo/pkg/database/postgresql"
 )
 
 type AppModel struct {
