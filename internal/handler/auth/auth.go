@@ -26,7 +26,7 @@ type authHandler struct {
 
 func New(am appmodel.AppModel) AuthHandler {
 	repo := authRepo.New(am)
-	service := auth.NewAuthService(repo)
+	service := auth.New(repo)
 	return &authHandler{service: service}
 }
 
