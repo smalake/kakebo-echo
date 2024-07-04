@@ -3,8 +3,8 @@ package main
 import (
 	// Import Echo v4.
 
-	"kakebo-echo/internal/appmodels"
-	"kakebo-echo/internal/handler"
+	"kakebo-echo/internal/appmodel"
+	"kakebo-echo/internal/handler/auth"
 	"kakebo-echo/pkg/database/postgresql"
 	mdl "kakebo-echo/pkg/middleware"
 
@@ -35,17 +35,18 @@ func main() {
 	}
 	// defer mc.Close()
 
-	appModel := appmodels.New(pc)
-	service := handler.NewAuthHandler(appModel)
-	e.POST("/login", service.LoginHandler)
-	e.POST("/register", service.RegisterUserHandler)
+	appModel := appmodel.New(pc)
+	authHeader := auth.New(*appModel)
+	e.POST("/login", authHeader.Login)
+	e.GET("/login-check", authHeader.LoginCheck)
+	e.POST("/register", authHeader.Register)
 
 	api := e.Group("/api/v1")
 	// JWT認証
 	api.Use(mdl.JwtDecode)
 
-	api.GET("/login-check", service.LoginCheckHandler)
-	api.POST("/logout", service.LogoutHandler)
+	api.GET("/login-check", authHeader.LoginCheck)
+	api.POST("/logout", authHeader.Logout)
 
 	// Start an Echo server.
 	e.Logger.Fatal(e.Start(":8080"))

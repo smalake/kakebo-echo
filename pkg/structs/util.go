@@ -1,12 +1,10 @@
-package handler
+package structs
 
 import (
-	"kakebo-echo/pkg/structs"
-
 	"github.com/labstack/echo/v4"
 )
 
-func ResponseHandler(ctx echo.Context, res structs.HttpResponse) error {
+func ResponseHandler(ctx echo.Context, res HttpResponse) error {
 	if res.Error != nil {
 		return ctx.JSON(res.Code, res.Error.Error())
 	}

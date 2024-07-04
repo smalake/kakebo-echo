@@ -2,43 +2,24 @@ package auth
 
 import (
 	"kakebo-echo/internal/model"
-	"kakebo-echo/internal/repository"
+	"kakebo-echo/pkg/errors"
 )
 
-type AuthService interface {
-	Login(string) (int, error)
-	Register(model.RegisterRequest) (int, error)
-	LoginCheck(string) (int, error)
-	Logout() error
-}
-
-type authService struct {
-	repo repository.AuthRepository
-}
-
-func NewAuthService(repo repository.AuthRepository) AuthService {
-	return &authService{repo: repo}
-}
-
 // ログイン処理（FirebaseのUIDがusersテーブルに登録されているかチェック）
-func (s *authService) Login(uid string) (int, error) {
-	// POSTからログイン情報を取得
-	// TODO：メモ用（転機したら削除）
-	// u := new(user.LoginRequest)
-	// if err := ctx.Bind(u); err != nil {
-	// 	return structs.HttpResponse{Code: 400, Error: err}
-	// }
-	return s.repo.Login(uid)
+func (s *authService) Login(uid string) error {
+	count, err := s.repo.FindUser(uid)
+	if err != nil || count == -1 {
+		return errors.InternalServerError
+	}
+
+	if count == 0 {
+		return errors.ErrUserNotFound
+	}
+	return nil
 }
 
 // ユーザ登録
-func (s *authService) Register(req model.RegisterRequest) (int, error) {
-	// POSTからユーザ情報を取得
-	// u := new(user.RegisterUserRequest)
-	// if err := ctx.Bind(u); err != nil {
-	// 	return structs.HttpResponse{Code: 400, Error: err}
-	// }
-
+func (s *authService) Register(req *model.RegisterRequest) error {
 	return s.repo.Register(req)
 }
 
@@ -49,5 +30,9 @@ func (s *authService) Logout() error {
 
 // ログイン確認
 func (s *authService) LoginCheck(uid string) (int, error) {
-	return s.repo.LoginCheck(uid)
+	admin, err := s.repo.LoginCheck(uid)
+	if err != nil {
+		return admin, err
+	}
+	return admin, nil
 }

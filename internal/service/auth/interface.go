@@ -1,15 +1,26 @@
 package auth
 
-import "database/sql"
-
-type JWT struct {
-	Token string `json:"token"`
-}
+import (
+	"database/sql"
+	"kakebo-echo/internal/model"
+	"kakebo-echo/internal/repository/auth"
+)
 
 type LoginCheck struct {
 	GroupAdmin sql.NullInt32 `db:"group_admin"`
 }
 
-type ParentName struct {
-	Name string `json:"name"`
+type AuthService interface {
+	Login(string) error
+	Register(*model.RegisterRequest) error
+	LoginCheck(string) (int, error)
+	Logout() error
+}
+
+type authService struct {
+	repo auth.AuthRepository
+}
+
+func NewAuthService(repo auth.AuthRepository) AuthService {
+	return &authService{repo: repo}
 }
