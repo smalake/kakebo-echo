@@ -2,8 +2,17 @@ package auth
 
 import (
 	"kakebo-echo/internal/model"
+	"kakebo-echo/internal/repository/auth"
 	"kakebo-echo/pkg/errors"
 )
+
+type authService struct {
+	repo auth.AuthRepository
+}
+
+func New(repo auth.AuthRepository) AuthService {
+	return &authService{repo: repo}
+}
 
 // ログイン処理（FirebaseのUIDがusersテーブルに登録されているかチェック）
 func (s *authService) Login(uid string) error {

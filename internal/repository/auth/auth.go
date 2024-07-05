@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/model"
 	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/errors"
@@ -8,6 +9,14 @@ import (
 	"strings"
 	"time"
 )
+
+type authRepository struct {
+	appModel appmodel.AppModel
+}
+
+func New(am appmodel.AppModel) AuthRepository {
+	return &authRepository{appModel: am}
+}
 
 func (r *authRepository) FindUser(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
