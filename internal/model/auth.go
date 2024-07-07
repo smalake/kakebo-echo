@@ -2,6 +2,10 @@ package model
 
 import "database/sql"
 
+type LoginRequest struct {
+	Uid string `json:"uid" db:"uid"`
+}
+
 type RegisterRequest struct {
 	Uid  string `json:"uid" db:"uid"`
 	Name string `json:"name" db:"name"`

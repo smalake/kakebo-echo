@@ -7,7 +7,6 @@ import (
 	"kakebo-echo/internal/service/auth"
 	"kakebo-echo/pkg/errors"
 	"kakebo-echo/pkg/structs"
-	"kakebo-echo/pkg/user"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -26,7 +25,7 @@ func New(am appmodel.AppModel) AuthHandler {
 // Auth関連
 func (h *authHandler) Login(ctx echo.Context) error {
 	// POSTからログイン情報を取得
-	u := new(user.LoginRequest)
+	u := new(model.LoginRequest)
 	if err := ctx.Bind(u); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get Login Request: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
