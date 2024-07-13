@@ -1,16 +1,11 @@
 package event
 
-import "kakebo-echo/internal/appmodel"
+import (
+	"kakebo-echo/internal/model"
+)
 
 type EventRepository interface {
-	Create() error
-	GetAll() error
-}
-
-type eventRepository struct {
-	appModel appmodel.AppModel
-}
-
-func New(am appmodel.AppModel) EventRepository {
-	return &eventRepository{appModel: am}
+	Create(model.Event, string) error
+	GetAll(string) ([]model.EventGet, error)
+	GetOne(int) (model.Event, error)
 }

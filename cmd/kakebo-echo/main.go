@@ -5,6 +5,7 @@ import (
 
 	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/handler/auth"
+	"kakebo-echo/internal/handler/event"
 	"kakebo-echo/pkg/database/postgresql"
 	mdl "kakebo-echo/pkg/middleware"
 
@@ -36,6 +37,7 @@ func main() {
 	// defer mc.Close()
 
 	appModel := appmodel.New(pc)
+
 	authHeader := auth.New(*appModel)
 	e.POST("/login", authHeader.Login)
 	e.GET("/login-check", authHeader.LoginCheck)
@@ -47,6 +49,9 @@ func main() {
 
 	api.GET("/login-check", authHeader.LoginCheck)
 	api.POST("/logout", authHeader.Logout)
+
+	eventHandler := event.New(*appModel)
+	api.POST("/event", eventHandler.Create)
 
 	// Start an Echo server.
 	e.Logger.Fatal(e.Start(":8080"))
