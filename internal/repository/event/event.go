@@ -41,7 +41,12 @@ func (r eventRepository) Create(e model.Event, uid string) error {
 }
 
 func (r eventRepository) GetAll(uid string) ([]model.EventGet, error) {
-	return nil, nil
+	query := event.EventGetAll
+	events := []model.EventGet{}
+	if err := r.appModel.PsgrCli.DB.Get(&events, query, uid); err != nil {
+		return nil, err
+	}
+	return events, nil
 }
 
 func (r eventRepository) GetOne(id int) (model.Event, error) {
