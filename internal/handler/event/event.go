@@ -38,7 +38,6 @@ func (h *eventHandler) Create(ctx echo.Context) error {
 		return errors.InternalServerError
 	}
 
-	// TODO: ここにバリデーションの実装が必要
 	if err := h.service.Create(*e, uid); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to create event: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
@@ -53,7 +52,6 @@ func (h *eventHandler) GetAll(ctx echo.Context) error {
 		return errors.InternalServerError
 	}
 
-	// TODO: ここにバリデーションの実装が必要
 	events, err := h.service.GetAll(uid)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get events: %+v", err)
