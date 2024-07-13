@@ -1,4 +1,4 @@
-package postgresql
+package auth
 
 // authパッケージ用
 var CheckUserByUid = "SELECT group_admin FROM users WHERE uid = $1"

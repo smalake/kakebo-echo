@@ -3,7 +3,7 @@ package auth
 import (
 	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/model"
-	"kakebo-echo/pkg/database/postgresql"
+	"kakebo-echo/pkg/database/postgresql/auth"
 	"kakebo-echo/pkg/errors"
 	"log"
 	"strings"
@@ -20,7 +20,7 @@ func New(am appmodel.AppModel) AuthRepository {
 
 func (r *authRepository) FindUser(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
-	query := postgresql.CheckUserByUid
+	query := auth.CheckUserByUid
 	var uidCount int
 	err := r.appModel.PsgrCli.DB.Get(&uidCount, query, uid)
 	if err != nil {
@@ -38,7 +38,7 @@ func (r *authRepository) Register(register *model.RegisterRequest) error {
 	}
 
 	// グループ作成
-	var groupQuery = postgresql.CreateGroup
+	var groupQuery = auth.CreateGroup
 	var groupId int
 	err = tx.QueryRowx(groupQuery, time.Now(), time.Now()).Scan(&groupId)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r *authRepository) Register(register *model.RegisterRequest) error {
 	}
 
 	//ユーザ作成
-	query := postgresql.RegisterUser
+	query := auth.RegisterUser
 	_, err = tx.Exec(query, register.Uid, register.Name, groupId, register.Type, time.Now(), time.Now())
 	if err != nil {
 		_ = tx.Rollback()
@@ -72,7 +72,7 @@ func (r *authRepository) Register(register *model.RegisterRequest) error {
 
 func (r *authRepository) LoginCheck(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
-	query := postgresql.CheckUserByUid
+	query := auth.CheckUserByUid
 	var loginCheck model.LoginCheck
 	err := r.appModel.PsgrCli.DB.Get(&loginCheck, query, uid)
 	if err != nil {
