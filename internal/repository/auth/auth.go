@@ -21,13 +21,13 @@ func New(cl postgresql.ClientInterface) AuthRepository {
 func (r *authRepository) FindUser(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
 	query := auth.CheckUserByUid
-	var uidCount int
+	var isAdmin int
 	db := r.client.GetDB()
-	err := db.Get(&uidCount, query, uid)
+	err := db.Get(&isAdmin, query, uid)
 	if err != nil {
 		return -1, err
 	}
-	return uidCount, nil
+	return isAdmin, nil
 }
 
 func (r *authRepository) Register(register *model.RegisterRequest) error {
