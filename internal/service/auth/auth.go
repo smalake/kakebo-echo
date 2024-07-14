@@ -17,9 +17,6 @@ func New(repo auth.AuthRepository) AuthService {
 // ログイン処理（FirebaseのUIDがusersテーブルに登録されているかチェック）
 func (s *authService) Login(uid string) error {
 	count, err := s.repo.FindUser(uid)
-	if count == 0 {
-		return errors.ErrUserNotFound
-	}
 	if err != nil || count == -1 {
 		return errors.InternalServerError
 	}
