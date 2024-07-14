@@ -5,5 +5,5 @@ import "kakebo-echo/internal/model"
 type EventService interface {
 	Create(model.EventCreate, string) error
 	GetAll(string) ([]model.EventGet, error)
-	GetOne(int) (model.Event, error)
+	GetOne(string, int) (model.EventGet, error)
 }

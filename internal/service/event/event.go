@@ -84,8 +84,8 @@ func (s eventService) GetAll(uid string) ([]model.EventGet, error) {
 	return s.repo.GetAll(uid)
 }
 
-func (s eventService) GetOne(id int) (model.Event, error) {
-	return s.repo.GetOne(id)
+func (s eventService) GetOne(uid string, id int) (model.EventGet, error) {
+	return s.repo.GetOne(uid, id)
 }
 
 // イベントの内容についてバリデーション

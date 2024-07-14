@@ -3,7 +3,6 @@ package main
 import (
 	// Import Echo v4.
 
-	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/handler/auth"
 	"kakebo-echo/internal/handler/event"
 	"kakebo-echo/pkg/database/postgresql"
@@ -36,9 +35,7 @@ func main() {
 	}
 	// defer mc.Close()
 
-	appModel := appmodel.New(pc)
-
-	authHeader := auth.New(*appModel)
+	authHeader := auth.New(pc)
 	e.POST("/login", authHeader.Login)
 	e.GET("/login-check", authHeader.LoginCheck)
 	e.POST("/register", authHeader.Register)
@@ -50,7 +47,7 @@ func main() {
 	api.GET("/login-check", authHeader.LoginCheck)
 	api.POST("/logout", authHeader.Logout)
 
-	eventHandler := event.New(*appModel)
+	eventHandler := event.New(pc)
 	api.POST("/event", eventHandler.Create)
 
 	// Start an Echo server.

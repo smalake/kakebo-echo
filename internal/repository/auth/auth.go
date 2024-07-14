@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/model"
+	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/database/postgresql/auth"
 	"kakebo-echo/pkg/errors"
 	"log"
@@ -11,18 +11,19 @@ import (
 )
 
 type authRepository struct {
-	appModel appmodel.AppModel
+	client postgresql.ClientInterface
 }
 
-func New(am appmodel.AppModel) AuthRepository {
-	return &authRepository{appModel: am}
+func New(cl postgresql.ClientInterface) AuthRepository {
+	return &authRepository{client: cl}
 }
 
 func (r *authRepository) FindUser(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
 	query := auth.CheckUserByUid
 	var uidCount int
-	err := r.appModel.PsgrCli.DB.Get(&uidCount, query, uid)
+	db := r.client.GetDB()
+	err := db.Get(&uidCount, query, uid)
 	if err != nil {
 		return -1, err
 	}
@@ -31,7 +32,8 @@ func (r *authRepository) FindUser(uid string) (int, error) {
 
 func (r *authRepository) Register(register *model.RegisterRequest) error {
 	// トランザクション開始
-	tx, err := r.appModel.PsgrCli.DB.Beginx()
+	db := r.client.GetDB()
+	tx, err := db.Beginx()
 	if err != nil {
 		log.Println("[FATAL] failed to transaction")
 		return err
@@ -73,8 +75,9 @@ func (r *authRepository) Register(register *model.RegisterRequest) error {
 func (r *authRepository) LoginCheck(uid string) (int, error) {
 	// UIDがDBに登録されているかチェック
 	query := auth.CheckUserByUid
-	var loginCheck model.LoginCheck
-	err := r.appModel.PsgrCli.DB.Get(&loginCheck, query, uid)
+	loginCheck := model.LoginCheck{}
+	db := r.client.GetDB()
+	err := db.Get(&loginCheck, query, uid)
 	if err != nil {
 		return -1, err
 	}

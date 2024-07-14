@@ -12,6 +12,10 @@ type Client struct {
 	DB *sqlx.DB
 }
 
+func (c *Client) GetDB() *sqlx.DB {
+	return c.DB
+}
+
 func NewClient() (*Client, error) {
 	err := env.SetPostgresConfig()
 	if err != nil {
@@ -29,10 +33,7 @@ func NewClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &Client{
-		DB: db,
-	}
-	return c, nil
+	return &Client{DB: db}, nil
 }
 
 func (c *Client) Close() error {

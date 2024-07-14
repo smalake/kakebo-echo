@@ -69,16 +69,16 @@ func (mr *MockEventServiceMockRecorder) GetAll(arg0 any) *gomock.Call {
 }
 
 // GetOne mocks base method.
-func (m *MockEventService) GetOne(arg0 int) (model.Event, error) {
+func (m *MockEventService) GetOne(arg0 string, arg1 int) (model.EventGet, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOne", arg0)
-	ret0, _ := ret[0].(model.Event)
+	ret := m.ctrl.Call(m, "GetOne", arg0, arg1)
+	ret0, _ := ret[0].(model.EventGet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetOne indicates an expected call of GetOne.
-func (mr *MockEventServiceMockRecorder) GetOne(arg0 any) *gomock.Call {
+func (mr *MockEventServiceMockRecorder) GetOne(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOne", reflect.TypeOf((*MockEventService)(nil).GetOne), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOne", reflect.TypeOf((*MockEventService)(nil).GetOne), arg0, arg1)
 }

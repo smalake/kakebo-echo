@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/model"
 	authRepo "kakebo-echo/internal/repository/auth"
 	"kakebo-echo/internal/service/auth"
+	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/errors"
 	"kakebo-echo/pkg/structs"
 	"net/http"
@@ -16,8 +16,8 @@ type authHandler struct {
 	service auth.AuthService
 }
 
-func New(am appmodel.AppModel) AuthHandler {
-	repo := authRepo.New(am)
+func New(cl postgresql.ClientInterface) AuthHandler {
+	repo := authRepo.New(cl)
 	service := auth.New(repo)
 	return &authHandler{service: service}
 }

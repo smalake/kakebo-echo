@@ -1,12 +1,12 @@
 package event
 
 import (
-	"kakebo-echo/internal/appmodel"
+	"errors"
 	"kakebo-echo/internal/model"
 	eventRepo "kakebo-echo/internal/repository/event"
 	"kakebo-echo/internal/repository/transaction"
 	"kakebo-echo/internal/service/event"
-	"kakebo-echo/pkg/errors"
+	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/structs"
 	"net/http"
 	"strconv"
@@ -18,9 +18,10 @@ type eventHandler struct {
 	service event.EventService
 }
 
-func New(am appmodel.AppModel) EventHandler {
-	repo := eventRepo.New(am)
-	transRepo := transaction.New(am.PsgrCli.DB)
+func New(cl postgresql.ClientInterface) EventHandler {
+	repo := eventRepo.New(cl)
+	db := cl.GetDB()
+	transRepo := transaction.New(db)
 	service := event.New(repo, transRepo)
 	return &eventHandler{service: service}
 }
@@ -35,7 +36,7 @@ func (h *eventHandler) Create(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return errors.InternalServerError
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
 	if err := h.service.Create(*e, uid); err != nil {
@@ -49,7 +50,7 @@ func (h *eventHandler) GetAll(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return errors.InternalServerError
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
 	events, err := h.service.GetAll(uid)
@@ -62,16 +63,21 @@ func (h *eventHandler) GetAll(ctx echo.Context) error {
 
 func (h *eventHandler) GetOne(ctx echo.Context) error {
 	idString := ctx.Param("id")
+	uid := ctx.Get("uid").(string)
 	if idString == "" {
 		ctx.Logger().Error("[FATAL] faild to get ID")
-		return errors.BadRequest
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
 	}
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		ctx.Logger().Error("[FATAL] ID is bad param")
-		return errors.BadRequest
+		ctx.Logger().Errorf("[FATAL] ID is bad param: %+v", err)
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
-	event, err := h.service.GetOne(id)
+	event, err := h.service.GetOne(uid, id)
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to get one event: %+v", err)
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+	}
 	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: event})
 }
 

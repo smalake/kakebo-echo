@@ -7,5 +7,5 @@ import (
 type EventRepository interface {
 	Create(model.Event, string) error
 	GetAll(string) ([]model.EventGet, error)
-	GetOne(int) (model.Event, error)
+	GetOne(string, int) (model.EventGet, error)
 }

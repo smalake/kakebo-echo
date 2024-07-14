@@ -21,7 +21,12 @@ type EventCreate struct {
 	Date      string `json:"date"`
 }
 
+// TODO: Event構造体を使った形にするかも？
 type EventGet struct {
-	ID int `json:"id" db:"id"`
-	Event
+	ID        int       `json:"id" db:"id"`
+	Amount    int       `json:"amount" db:"amount"`
+	Category  int       `json:"category" db:"category"`
+	Memo      string    `json:"memo" db:"memo"`
+	StoreName string    `json:"store_name" db:"store_name"`
+	Date      time.Time `json:"date" db:"date"`
 }

@@ -1,24 +1,25 @@
 package event
 
 import (
-	"kakebo-echo/internal/appmodel"
 	"kakebo-echo/internal/model"
+	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/database/postgresql/event"
 	"log"
 	"time"
 )
 
 type eventRepository struct {
-	appModel appmodel.AppModel
+	client postgresql.ClientInterface
 }
 
-func New(am appmodel.AppModel) EventRepository {
-	return &eventRepository{appModel: am}
+func New(cl postgresql.ClientInterface) EventRepository {
+	return &eventRepository{client: cl}
 }
 
 func (r eventRepository) Create(e model.Event, uid string) error {
 	// トランザクション開始
-	tx, err := r.appModel.PsgrCli.DB.Beginx()
+	db := r.client.GetDB()
+	tx, err := db.Beginx()
 	if err != nil {
 		log.Println("[FATAL] failed to transaction")
 		return err
@@ -43,12 +44,19 @@ func (r eventRepository) Create(e model.Event, uid string) error {
 func (r eventRepository) GetAll(uid string) ([]model.EventGet, error) {
 	query := event.EventGetAll
 	events := []model.EventGet{}
-	if err := r.appModel.PsgrCli.DB.Get(&events, query, uid); err != nil {
+	db := r.client.GetDB()
+	if err := db.Get(&events, query, uid); err != nil {
 		return nil, err
 	}
 	return events, nil
 }
 
-func (r eventRepository) GetOne(id int) (model.Event, error) {
-	return model.Event{}, nil
+func (r eventRepository) GetOne(uid string, id int) (model.EventGet, error) {
+	query := event.EventGetOne
+	event := model.EventGet{}
+	db := r.client.GetDB()
+	if err := db.Get(&event, query, uid, id); err != nil {
+		return event, err
+	}
+	return event, nil
 }
