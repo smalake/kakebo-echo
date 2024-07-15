@@ -45,7 +45,7 @@ func (r privateRepository) GetAll(uid string) ([]model.PrivateGet, error) {
 	query := private.PrivateGetAll
 	privates := []model.PrivateGet{}
 	db := r.client.GetDB()
-	if err := db.Get(&privates, query, uid); err != nil {
+	if err := db.Select(&privates, query, uid); err != nil {
 		return nil, err
 	}
 	return privates, nil
