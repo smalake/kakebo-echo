@@ -30,3 +30,8 @@ type EventGet struct {
 	StoreName string    `json:"store_name" db:"store_name"`
 	Date      time.Time `json:"date" db:"date"`
 }
+
+type GetIDs struct {
+	ID      int `json:"id" db:"id"`
+	GroupID int `json:"group_id" db:"group_id"`
+}

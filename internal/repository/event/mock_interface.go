@@ -41,17 +41,17 @@ func (m *MockEventRepository) EXPECT() *MockEventRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEventRepository) Create(arg0 *sqlx.Tx, arg1 model.Event, arg2 int) error {
+func (m *MockEventRepository) Create(arg0 *sqlx.Tx, arg1 model.Event, arg2, arg3 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockEventRepositoryMockRecorder) Create(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockEventRepositoryMockRecorder) Create(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEventRepository)(nil).Create), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEventRepository)(nil).Create), arg0, arg1, arg2, arg3)
 }
 
 // GetAll mocks base method.
@@ -69,19 +69,20 @@ func (mr *MockEventRepositoryMockRecorder) GetAll(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockEventRepository)(nil).GetAll), arg0)
 }
 
-// GetGroupID mocks base method.
-func (m *MockEventRepository) GetGroupID(arg0 string) (int, error) {
+// GetIDs mocks base method.
+func (m *MockEventRepository) GetIDs(arg0 string) (int, int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupID", arg0)
+	ret := m.ctrl.Call(m, "GetIDs", arg0)
 	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
-// GetGroupID indicates an expected call of GetGroupID.
-func (mr *MockEventRepositoryMockRecorder) GetGroupID(arg0 any) *gomock.Call {
+// GetIDs indicates an expected call of GetIDs.
+func (mr *MockEventRepositoryMockRecorder) GetIDs(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupID", reflect.TypeOf((*MockEventRepository)(nil).GetGroupID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDs", reflect.TypeOf((*MockEventRepository)(nil).GetIDs), arg0)
 }
 
 // GetOne mocks base method.

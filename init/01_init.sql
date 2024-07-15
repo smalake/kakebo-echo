@@ -28,18 +28,20 @@ CREATE TABLE events (
   store_name varchar(255) DEFAULT NULL,
   group_id bigint NOT NULL,
   memo varchar(255) DEFAULT NULL,
-  create_user varchar(255) DEFAULT NULL,
-  update_user varchar(255) DEFAULT NULL,
+  create_user BIGINT DEFAULT NULL,
+  update_user BIGINT DEFAULT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE RESTRICT
+  FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE RESTRICT,
+  FOREIGN KEY (create_user) REFERENCES users(id) ON DELETE RESTRICT,
+  FOREIGN KEY (update_user) REFERENCES users(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE privates (
   id bigserial PRIMARY KEY,
   amount int NOT NULL,
   category int DEFAULT NULL,
-  date varchar(255) DEFAULT NULL,
+  date date NOT NULL,
   store_name varchar(255) DEFAULT NULL,
   user_id bigint NOT NULL,
   memo varchar(255) DEFAULT NULL,

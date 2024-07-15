@@ -18,20 +18,20 @@ func New(cl postgresql.ClientInterface) EventRepository {
 	return &eventRepository{client: cl}
 }
 
-func (r eventRepository) GetGroupID(uid string) (int, error) {
-	query := event.GetGroupID
-	var gid int
+func (r eventRepository) GetIDs(uid string) (int, int, error) {
+	query := event.GetID
+	ids := model.GetIDs{}
 	db := r.client.GetDB()
-	if err := db.Get(&gid, query, uid); err != nil {
-		return 0, err
+	if err := db.Get(&ids, query, uid); err != nil {
+		return 0, 0, err
 	}
-	return gid, nil
+	return ids.ID, ids.GroupID, nil
 }
 
-func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, groupId int) error {
+func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, userId int, groupId int) error {
 	// イベントの追加
 	query := event.EventCreate
-	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, time.Now(), time.Now())
+	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, userId, userId, time.Now(), time.Now())
 	if err != nil {
 		log.Println("[FATAL] イベントの新規作成に失敗しました")
 		return err

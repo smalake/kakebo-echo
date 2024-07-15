@@ -64,7 +64,7 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 	}
 
 	// uidからgroup_idを取得
-	gid, err := s.repo.GetGroupID(uid)
+	usid, gid, err := s.repo.GetIDs(uid)
 	if err != nil {
 		return err
 	}
@@ -73,11 +73,11 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
 
 		// eventのバリデーションはトランザクション開始前に完了させておく
-		if err := s.repo.Create(tx, event1, gid); err != nil {
+		if err := s.repo.Create(tx, event1, usid, gid); err != nil {
 			return err
 		}
 		if e.Amount2 > 0 {
-			if err := s.repo.Create(tx, event2, gid); err != nil {
+			if err := s.repo.Create(tx, event2, usid, gid); err != nil {
 				return err
 			}
 		}
@@ -98,7 +98,7 @@ func (s eventService) GetOne(uid string, id int) (model.EventGet, error) {
 
 func (s eventService) GetRevision(uid string) (int, error) {
 	// uidからgroup_idを取得
-	gid, err := s.repo.GetGroupID(uid)
+	_, gid, err := s.repo.GetIDs(uid)
 	if err != nil {
 		return -1, err
 	}
