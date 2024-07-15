@@ -5,19 +5,18 @@ CREATE TABLE groups (
   revision bigint DEFAULT 0,
   updated_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (id)
 );
 
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
   uid varchar(255) NOT NULL,
   group_id BIGINT,
-  group_admin int NOT NULL DEFAULT 0,
+  group_admin SMALLINT NOT NULL DEFAULT 1,
   name varchar(255) DEFAULT NULL,
-  register_type int DEFAULT NULL,
+  register_type SMALLINT DEFAULT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  UNIQUE (email),
+  CHECK (group_admin IN (0, 1)),
   FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE RESTRICT
 );
 
@@ -25,7 +24,7 @@ CREATE TABLE events (
   id bigserial PRIMARY KEY,
   amount int NOT NULL,
   category int DEFAULT NULL,
-  date varchar(255) DEFAULT NULL,
+  date date NOT NULL,
   store_name varchar(255) DEFAULT NULL,
   group_id bigint NOT NULL,
   memo varchar(255) DEFAULT NULL,
@@ -33,7 +32,6 @@ CREATE TABLE events (
   update_user varchar(255) DEFAULT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (id),
   FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE RESTRICT
 );
 
@@ -47,7 +45,6 @@ CREATE TABLE privates (
   memo varchar(255) DEFAULT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
@@ -58,6 +55,5 @@ CREATE TABLE patterns (
   category int NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
