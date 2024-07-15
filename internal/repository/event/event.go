@@ -6,6 +6,8 @@ import (
 	"kakebo-echo/pkg/database/postgresql/event"
 	"log"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type eventRepository struct {
@@ -16,26 +18,21 @@ func New(cl postgresql.ClientInterface) EventRepository {
 	return &eventRepository{client: cl}
 }
 
-func (r eventRepository) Create(e model.Event, uid string) error {
-	// トランザクション開始
-	db := r.client.GetDB()
-	tx, err := db.Beginx()
-	if err != nil {
-		log.Println("[FATAL] failed to transaction")
-		return err
+func (r eventRepository) GetGroupID(tx *sqlx.Tx, uid string) (int, error) {
+	query := event.GetGroupID
+	var gid int
+	if err := tx.Get(&gid, query, uid); err != nil {
+		return 0, err
 	}
+	return gid, nil
+}
+
+func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, groupId int) error {
 	// イベントの追加
 	query := event.EventCreate
-	_, err = tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, time.Now(), time.Now())
+	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, time.Now(), time.Now())
 	if err != nil {
-		_ = tx.Rollback()
 		log.Println("[FATAL] イベントの新規作成に失敗しました")
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Println("[FATAL] failed to commit")
-		_ = tx.Rollback()
 		return err
 	}
 	return nil

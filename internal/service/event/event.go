@@ -27,6 +27,7 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 	if err != nil {
 		return err
 	}
+
 	// event1は必ず存在するためそのまま処理
 	event1 := model.Event{
 		Amount:    e.Amount1,
@@ -64,12 +65,18 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 
 	// トランザクション処理
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
+		// uidからgroup_idを取得
+		gid, err := s.repo.GetGroupID(tx, uid)
+		if err != nil {
+			return err
+		}
+
 		// eventのバリデーションはトランザクション開始前に完了させておく
-		if err := s.repo.Create(event1, uid); err != nil {
+		if err := s.repo.Create(tx, event1, gid); err != nil {
 			return err
 		}
 		if e.Amount2 > 0 {
-			if err := s.repo.Create(event2, uid); err != nil {
+			if err := s.repo.Create(tx, event2, gid); err != nil {
 				return err
 			}
 		}
