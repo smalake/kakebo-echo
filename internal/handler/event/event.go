@@ -88,3 +88,17 @@ func (h *eventHandler) Update(ctx echo.Context) error {
 func (h *eventHandler) Delete(ctx echo.Context) error {
 	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
 }
+
+func (h *eventHandler) GetRevision(ctx echo.Context) error {
+	uid := ctx.Get("uid").(string)
+	if uid == "" {
+		ctx.Logger().Error("[FATAL] faild to get UID")
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+	}
+	revision, err := h.service.GetRevision(uid)
+	if err != nil || revision == -1 {
+		ctx.Logger().Errorf("[FATAL] failed to get revision: %+v", err)
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+	}
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: revision})
+}

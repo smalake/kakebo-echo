@@ -63,13 +63,14 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 		}
 	}
 
+	// uidからgroup_idを取得
+	gid, err := s.repo.GetGroupID(uid)
+	if err != nil {
+		return err
+	}
+
 	// トランザクション処理
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
-		// uidからgroup_idを取得
-		gid, err := s.repo.GetGroupID(tx, uid)
-		if err != nil {
-			return err
-		}
 
 		// eventのバリデーションはトランザクション開始前に完了させておく
 		if err := s.repo.Create(tx, event1, gid); err != nil {
@@ -93,6 +94,15 @@ func (s eventService) GetAll(uid string) ([]model.EventGet, error) {
 
 func (s eventService) GetOne(uid string, id int) (model.EventGet, error) {
 	return s.repo.GetOne(uid, id)
+}
+
+func (s eventService) GetRevision(uid string) (int, error) {
+	// uidからgroup_idを取得
+	gid, err := s.repo.GetGroupID(uid)
+	if err != nil {
+		return -1, err
+	}
+	return s.repo.GetRevision(gid)
 }
 
 // イベントの内容についてバリデーション

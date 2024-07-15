@@ -70,18 +70,18 @@ func (mr *MockEventRepositoryMockRecorder) GetAll(arg0 any) *gomock.Call {
 }
 
 // GetGroupID mocks base method.
-func (m *MockEventRepository) GetGroupID(arg0 *sqlx.Tx, arg1 string) (int, error) {
+func (m *MockEventRepository) GetGroupID(arg0 string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetGroupID", arg0)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetGroupID indicates an expected call of GetGroupID.
-func (mr *MockEventRepositoryMockRecorder) GetGroupID(arg0, arg1 any) *gomock.Call {
+func (mr *MockEventRepositoryMockRecorder) GetGroupID(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupID", reflect.TypeOf((*MockEventRepository)(nil).GetGroupID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupID", reflect.TypeOf((*MockEventRepository)(nil).GetGroupID), arg0)
 }
 
 // GetOne mocks base method.
@@ -97,4 +97,19 @@ func (m *MockEventRepository) GetOne(arg0 string, arg1 int) (model.EventGet, err
 func (mr *MockEventRepositoryMockRecorder) GetOne(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOne", reflect.TypeOf((*MockEventRepository)(nil).GetOne), arg0, arg1)
+}
+
+// GetRevision mocks base method.
+func (m *MockEventRepository) GetRevision(arg0 int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRevision", arg0)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRevision indicates an expected call of GetRevision.
+func (mr *MockEventRepositoryMockRecorder) GetRevision(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevision", reflect.TypeOf((*MockEventRepository)(nil).GetRevision), arg0)
 }

@@ -18,10 +18,11 @@ func New(cl postgresql.ClientInterface) EventRepository {
 	return &eventRepository{client: cl}
 }
 
-func (r eventRepository) GetGroupID(tx *sqlx.Tx, uid string) (int, error) {
+func (r eventRepository) GetGroupID(uid string) (int, error) {
 	query := event.GetGroupID
 	var gid int
-	if err := tx.Get(&gid, query, uid); err != nil {
+	db := r.client.GetDB()
+	if err := db.Get(&gid, query, uid); err != nil {
 		return 0, err
 	}
 	return gid, nil
@@ -42,7 +43,7 @@ func (r eventRepository) GetAll(uid string) ([]model.EventGet, error) {
 	query := event.EventGetAll
 	events := []model.EventGet{}
 	db := r.client.GetDB()
-	if err := db.Get(&events, query, uid); err != nil {
+	if err := db.Select(&events, query, uid); err != nil {
 		return nil, err
 	}
 	return events, nil
@@ -56,4 +57,14 @@ func (r eventRepository) GetOne(uid string, id int) (model.EventGet, error) {
 		return event, err
 	}
 	return event, nil
+}
+
+func (r eventRepository) GetRevision(gid int) (int, error) {
+	query := event.GetRevision
+	var revision int
+	db := r.client.GetDB()
+	if err := db.Get(&revision, query, gid); err != nil {
+		return -1, err
+	}
+	return revision, nil
 }

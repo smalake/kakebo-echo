@@ -8,4 +8,5 @@ type EventHandler interface {
 	GetOne(echo.Context) error
 	Update(echo.Context) error
 	Delete(echo.Context) error
+	GetRevision(echo.Context) error
 }
