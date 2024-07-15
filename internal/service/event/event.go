@@ -71,13 +71,20 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 
 	// トランザクション処理
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
-
+		revision1, err := s.repo.UpdateRevision(tx, gid)
+		if err != nil {
+			return err
+		}
 		// eventのバリデーションはトランザクション開始前に完了させておく
-		if err := s.repo.Create(tx, event1, usid, gid); err != nil {
+		if err := s.repo.Create(tx, event1, revision1, usid, gid); err != nil {
 			return err
 		}
 		if e.Amount2 > 0 {
-			if err := s.repo.Create(tx, event2, usid, gid); err != nil {
+			revision2, err := s.repo.UpdateRevision(tx, gid)
+			if err != nil {
+				return err
+			}
+			if err := s.repo.Create(tx, event2, revision2, usid, gid); err != nil {
 				return err
 			}
 		}

@@ -28,10 +28,10 @@ func (r eventRepository) GetIDs(uid string) (int, int, error) {
 	return ids.ID, ids.GroupID, nil
 }
 
-func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, userId int, groupId int) error {
+func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, revision, userId, groupId int) error {
 	// イベントの追加
 	query := event.EventCreate
-	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, userId, userId, time.Now(), time.Now())
+	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, revision, userId, userId, time.Now(), time.Now())
 	if err != nil {
 		log.Println("[FATAL] イベントの新規作成に失敗しました")
 		return err
@@ -61,6 +61,16 @@ func (r eventRepository) GetOne(uid string, id int) (model.EventGet, error) {
 
 func (r eventRepository) GetRevision(gid int) (int, error) {
 	query := event.GetRevision
+	var revision int
+	db := r.client.GetDB()
+	if err := db.Get(&revision, query, gid); err != nil {
+		return -1, err
+	}
+	return revision, nil
+}
+
+func (r eventRepository) UpdateRevision(tx *sqlx.Tx, gid int) (int, error) {
+	query := event.UpdateRevision
 	var revision int
 	db := r.client.GetDB()
 	if err := db.Get(&revision, query, gid); err != nil {

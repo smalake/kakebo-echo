@@ -28,6 +28,7 @@ CREATE TABLE events (
   store_name varchar(255) DEFAULT NULL,
   group_id bigint NOT NULL,
   memo varchar(255) DEFAULT NULL,
+  revision bigint NOT NULL,
   create_user BIGINT DEFAULT NULL,
   update_user BIGINT DEFAULT NULL,
   created_at TIMESTAMP NOT NULL,

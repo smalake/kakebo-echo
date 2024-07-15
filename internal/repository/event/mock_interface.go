@@ -41,17 +41,17 @@ func (m *MockEventRepository) EXPECT() *MockEventRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEventRepository) Create(arg0 *sqlx.Tx, arg1 model.Event, arg2, arg3 int) error {
+func (m *MockEventRepository) Create(arg0 *sqlx.Tx, arg1 model.Event, arg2, arg3, arg4 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockEventRepositoryMockRecorder) Create(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockEventRepositoryMockRecorder) Create(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEventRepository)(nil).Create), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEventRepository)(nil).Create), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetAll mocks base method.
@@ -113,4 +113,19 @@ func (m *MockEventRepository) GetRevision(arg0 int) (int, error) {
 func (mr *MockEventRepositoryMockRecorder) GetRevision(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevision", reflect.TypeOf((*MockEventRepository)(nil).GetRevision), arg0)
+}
+
+// UpdateRevision mocks base method.
+func (m *MockEventRepository) UpdateRevision(arg0 *sqlx.Tx, arg1 int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRevision", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateRevision indicates an expected call of UpdateRevision.
+func (mr *MockEventRepositoryMockRecorder) UpdateRevision(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRevision", reflect.TypeOf((*MockEventRepository)(nil).UpdateRevision), arg0, arg1)
 }
