@@ -28,15 +28,17 @@ func (r eventRepository) GetIDs(uid string) (int, int, error) {
 	return ids.ID, ids.GroupID, nil
 }
 
-func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, revision, userId, groupId int) error {
+func (r eventRepository) Create(tx *sqlx.Tx, e model.Event, revision, userId, groupId int) (int, error) {
 	// イベントの追加
 	query := event.EventCreate
-	_, err := tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, revision, userId, userId, time.Now(), time.Now())
+	var id int
+	err := tx.QueryRow(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, groupId, revision, userId, userId, time.Now(), time.Now()).Scan(&id)
 	if err != nil {
 		log.Println("[FATAL] イベントの新規作成に失敗しました")
-		return err
+		return -1, err
 	}
-	return nil
+	// 登録したeventのidを返す
+	return id, nil
 }
 
 func (r eventRepository) GetAll(uid string) ([]model.EventGet, error) {

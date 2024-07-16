@@ -40,11 +40,12 @@ func (m *MockEventService) EXPECT() *MockEventServiceMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEventService) Create(arg0 model.EventCreate, arg1 string) error {
+func (m *MockEventService) Create(arg0 model.EventCreate, arg1 string) ([]int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
@@ -81,4 +82,19 @@ func (m *MockEventService) GetOne(arg0 string, arg1 int) (model.EventGet, error)
 func (mr *MockEventServiceMockRecorder) GetOne(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOne", reflect.TypeOf((*MockEventService)(nil).GetOne), arg0, arg1)
+}
+
+// GetRevision mocks base method.
+func (m *MockEventService) GetRevision(arg0 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRevision", arg0)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRevision indicates an expected call of GetRevision.
+func (mr *MockEventServiceMockRecorder) GetRevision(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRevision", reflect.TypeOf((*MockEventService)(nil).GetRevision), arg0)
 }

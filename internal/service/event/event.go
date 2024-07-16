@@ -21,11 +21,11 @@ func New(repo event.EventRepository, transRepo transaction.TransactionRepository
 	return &eventService{repo: repo, transaction: transRepo}
 }
 
-func (s eventService) Create(e model.EventCreate, uid string) error {
+func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 	// 日付をstring型からdate型へと変換
 	formattedDate, err := time.Parse("2006-01-02T15:04:05.000Z", e.Date)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// event1は必ず存在するためそのまま処理
@@ -43,7 +43,7 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 	checkEvent1, source := eventValidation(event1)
 	if !checkEvent1 {
 		log.Printf("[ERROR] event1 %s is bad value", source)
-		return errors.BadRequest
+		return nil, errors.BadRequest
 	}
 
 	// イベントが2件の場合は分割してevent2として処理する
@@ -59,15 +59,18 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 		checkEvent2, source := eventValidation(event2)
 		if !checkEvent2 {
 			log.Printf("[ERROR] event2 %s is bad value", source)
-			return errors.BadRequest
+			return nil, errors.BadRequest
 		}
 	}
 
 	// uidからgroup_idを取得
 	usid, gid, err := s.repo.GetIDs(uid)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	// 追加したカラムのIDを結果として返す
+	var result []int
 
 	// トランザクション処理
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
@@ -76,23 +79,27 @@ func (s eventService) Create(e model.EventCreate, uid string) error {
 			return err
 		}
 		// eventのバリデーションはトランザクション開始前に完了させておく
-		if err := s.repo.Create(tx, event1, revision1, usid, gid); err != nil {
+		id1, err := s.repo.Create(tx, event1, revision1, usid, gid)
+		if err != nil {
 			return err
 		}
+		result = append(result, id1)
 		if e.Amount2 > 0 {
 			revision2, err := s.repo.UpdateRevision(tx, gid)
 			if err != nil {
 				return err
 			}
-			if err := s.repo.Create(tx, event2, revision2, usid, gid); err != nil {
+			id2, err := s.repo.Create(tx, event2, revision2, usid, gid)
+			if err != nil {
 				return err
 			}
+			result = append(result, id2)
 		}
 		return nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
 func (s eventService) GetAll(uid string) ([]model.EventGet, error) {

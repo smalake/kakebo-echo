@@ -39,11 +39,12 @@ func (h *eventHandler) Create(ctx echo.Context) error {
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
-	if err := h.service.Create(*e, uid); err != nil {
+	ids, err := h.service.Create(*e, uid)
+	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to create event: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: ids})
 }
 
 func (h *eventHandler) GetAll(ctx echo.Context) error {
