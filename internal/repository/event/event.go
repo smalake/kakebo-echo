@@ -74,8 +74,7 @@ func (r eventRepository) GetRevision(gid int) (int, error) {
 func (r eventRepository) UpdateRevision(tx *sqlx.Tx, gid int) (int, error) {
 	query := event.UpdateRevision
 	var revision int
-	db := r.client.GetDB()
-	if err := db.Get(&revision, query, gid); err != nil {
+	if err := tx.Get(&revision, query, gid); err != nil {
 		return -1, err
 	}
 	return revision, nil
