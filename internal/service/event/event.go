@@ -102,8 +102,23 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 	return result, nil
 }
 
-func (s eventService) GetAll(uid string) ([]model.EventGet, error) {
-	return s.repo.GetAll(uid)
+func (s eventService) GetAll(uid string) ([]model.EventResponse, error) {
+	// TODO: dateをstring型へとフォーマット指定して変換
+	events, err := s.repo.GetAll(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	// Dateを文字列かつ"%Y-%m-%d"形式にフォーマットするための処理
+	response := make([]model.EventResponse, len(events))
+	for i, event := range events {
+		response[i].ID = event.ID
+		response[i].Amount = event.Amount
+		response[i].Category = event.Category
+		response[i].StoreName = event.StoreName
+		response[i].Date = event.Date.Format("2006-01-02")
+	}
+	return response, nil
 }
 
 func (s eventService) GetOne(uid string, id int) (model.EventGet, error) {

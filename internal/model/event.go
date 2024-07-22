@@ -35,3 +35,11 @@ type GetIDs struct {
 	ID      int `json:"id" db:"id"`
 	GroupID int `json:"group_id" db:"group_id"`
 }
+
+type EventResponse struct {
+	ID        int    `json:"id"`
+	Amount    int    `json:"amount"`
+	Category  int    `json:"category"`
+	StoreName string `json:"store_name"`
+	Date      string `json:"date"`
+}
