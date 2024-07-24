@@ -51,11 +51,11 @@ func (r eventRepository) GetAll(uid string) ([]model.EventGet, error) {
 	return events, nil
 }
 
-func (r eventRepository) GetOne(uid string, id int) (model.EventGet, error) {
+func (r eventRepository) GetOne(uid string, id int) (model.EventOne, error) {
 	query := event.EventGetOne
-	event := model.EventGet{}
+	event := model.EventOne{}
 	db := r.client.GetDB()
-	if err := db.Get(&event, query, uid, id); err != nil {
+	if err := db.Get(&event, query, id, uid); err != nil {
 		return event, err
 	}
 	return event, nil

@@ -103,7 +103,6 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 }
 
 func (s eventService) GetAll(uid string) ([]model.EventResponse, error) {
-	// TODO: dateをstring型へとフォーマット指定して変換
 	events, err := s.repo.GetAll(uid)
 	if err != nil {
 		return nil, err
@@ -121,8 +120,15 @@ func (s eventService) GetAll(uid string) ([]model.EventResponse, error) {
 	return response, nil
 }
 
-func (s eventService) GetOne(uid string, id int) (model.EventGet, error) {
-	return s.repo.GetOne(uid, id)
+func (s eventService) GetOne(uid string, id int) (model.EventOne, error) {
+	event, err := s.repo.GetOne(uid, id)
+	log.Printf("%+v", event)
+	if err != nil {
+		return model.EventOne{}, err
+	}
+	event.CreatedAt = event.CreatedAtDate.Format("2006-01-02 15:04:05")
+	event.UpdatedAt = event.UpdatedAtDate.Format("2006-01-02 15:04:05")
+	return event, nil
 }
 
 func (s eventService) GetRevision(uid string) (int, error) {
