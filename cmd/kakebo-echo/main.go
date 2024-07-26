@@ -52,6 +52,7 @@ func main() {
 	api.POST("/event", eventHandler.Create)
 	api.GET("/event", eventHandler.GetAll)
 	api.GET("/event/:id", eventHandler.GetOne)
+	api.PUT("/event/:id", eventHandler.Update)
 	api.GET("/revision", eventHandler.GetRevision)
 
 	privateHandler := private.New(pc)

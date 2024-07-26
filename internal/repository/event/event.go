@@ -61,6 +61,14 @@ func (r eventRepository) GetOne(uid string, id int) (model.EventOne, error) {
 	return event, nil
 }
 
+func (r eventRepository) Update(tx *sqlx.Tx, e model.EventUpdate, uid string, id, userId, revision int) error {
+	query := event.EventUpdate
+	if _, err := tx.Exec(query, e.Amount, e.Category, e.Memo, e.StoreName, e.Date, userId, time.Now(), revision, id, uid); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r eventRepository) GetRevision(gid int) (int, error) {
 	query := event.GetRevision
 	var revision int

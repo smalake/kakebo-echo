@@ -21,6 +21,21 @@ var EventGetOne = `
 	WHERE events.id = $1
 	AND events.group_id 
 		IN (SELECT group_id FROM users WHERE uid = $2)
-	`
+`
+
+var EventUpdate = `
+	UPDATE events SET
+		amount = $1,
+		category = $2,
+		memo = $3,
+		store_name = $4,
+		date = $5,
+		update_user = $6,
+		updated_at = $7,
+		revision = $8
+	WHERE id = $9
+	AND group_id
+		IN (SELECT group_id FROM users WHERE uid = $10)
+`
 var GetRevision = "SELECT revision FROM groups WHERE id = $1"
 var UpdateRevision = "UPDATE groups SET revision = revision + 1 WHERE id = $1 RETURNING revision"

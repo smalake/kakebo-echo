@@ -122,13 +122,39 @@ func (s eventService) GetAll(uid string) ([]model.EventResponse, error) {
 
 func (s eventService) GetOne(uid string, id int) (model.EventOne, error) {
 	event, err := s.repo.GetOne(uid, id)
-	log.Printf("%+v", event)
 	if err != nil {
 		return model.EventOne{}, err
 	}
 	event.CreatedAt = event.CreatedAtDate.Format("2006-01-02 15:04:05")
 	event.UpdatedAt = event.UpdatedAtDate.Format("2006-01-02 15:04:05")
 	return event, nil
+}
+
+func (s eventService) Update(e model.EventUpdate, uid string, id int) (int, error) {
+	// uidからgroup_idを取得
+	usid, gid, err := s.repo.GetIDs(uid)
+	if err != nil {
+		return -1, err
+	}
+	var revision int
+	// トランザクション処理
+	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
+		revision, err = s.repo.UpdateRevision(tx, gid)
+		if err != nil {
+			return err
+		}
+		err = s.repo.Update(tx, e, uid, id, usid, revision)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return -1, err
+	}
+	if err != nil {
+		return -1, err
+	}
+	return revision, nil
 }
 
 func (s eventService) GetRevision(uid string) (int, error) {

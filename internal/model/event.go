@@ -30,6 +30,14 @@ type EventGet struct {
 	Date      time.Time `json:"date" db:"date"`
 }
 
+type EventUpdate struct {
+	Amount    int    `json:"amount"`
+	Category  int    `json:"category"`
+	Memo      string `json:"memo"`
+	StoreName string `json:"store_name"`
+	Date      string `json:"date"`
+}
+
 type EventOne struct {
 	ID            int       `json:"id" db:"id"`
 	Amount        int       `json:"amount" db:"amount"`
