@@ -44,7 +44,7 @@ func (h *eventHandler) Create(ctx echo.Context) error {
 		ctx.Logger().Errorf("[FATAL] failed to create event: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: ids})
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"ids": ids}})
 }
 
 func (h *eventHandler) GetAll(ctx echo.Context) error {
@@ -59,7 +59,7 @@ func (h *eventHandler) GetAll(ctx echo.Context) error {
 		ctx.Logger().Errorf("[FATAL] failed to get events: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: events})
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"events": events}})
 }
 
 func (h *eventHandler) GetOne(ctx echo.Context) error {
@@ -79,7 +79,7 @@ func (h *eventHandler) GetOne(ctx echo.Context) error {
 		ctx.Logger().Errorf("[FATAL] failed to get one event: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: event})
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"event": event}})
 }
 
 func (h *eventHandler) Update(ctx echo.Context) error {
@@ -124,5 +124,5 @@ func (h *eventHandler) GetRevision(ctx echo.Context) error {
 		ctx.Logger().Errorf("[FATAL] failed to get revision: %+v", err)
 		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: revision})
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
 }
