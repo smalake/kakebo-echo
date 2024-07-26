@@ -157,6 +157,33 @@ func (s eventService) Update(e model.EventUpdate, uid string, id int) (int, erro
 	return revision, nil
 }
 
+func (s eventService) Delete(uid string, id int) (int, error) {
+	// uidからgroup_idを取得
+	_, gid, err := s.repo.GetIDs(uid)
+	if err != nil {
+		return -1, err
+	}
+	var revision int
+	// トランザクション処理
+	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
+		revision, err = s.repo.UpdateRevision(tx, gid)
+		if err != nil {
+			return err
+		}
+		err = s.repo.Delete(tx, gid, id)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return -1, err
+	}
+	if err != nil {
+		return -1, err
+	}
+	return revision, nil
+}
+
 func (s eventService) GetRevision(uid string) (int, error) {
 	// uidからgroup_idを取得
 	_, gid, err := s.repo.GetIDs(uid)

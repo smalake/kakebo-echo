@@ -110,7 +110,24 @@ func (h *eventHandler) Update(ctx echo.Context) error {
 }
 
 func (h *eventHandler) Delete(ctx echo.Context) error {
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
+	idString := ctx.Param("id")
+	uid := ctx.Get("uid").(string)
+	if idString == "" {
+		ctx.Logger().Error("[FATAL] faild to get ID")
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] ID is bad param: %+v", err)
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+	}
+	revision, err := h.service.Delete(uid, id)
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to delete event: %+v", err)
+		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+	}
+	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
 }
 
 func (h *eventHandler) GetRevision(ctx echo.Context) error {

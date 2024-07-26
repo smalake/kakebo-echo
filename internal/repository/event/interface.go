@@ -12,6 +12,7 @@ type EventRepository interface {
 	GetAll(string) ([]model.EventGet, error)
 	GetOne(string, int) (model.EventOne, error)
 	Update(*sqlx.Tx, model.EventUpdate, string, int, int, int) error
+	Delete(*sqlx.Tx, int, int) error
 	GetRevision(int) (int, error)
 	UpdateRevision(*sqlx.Tx, int) (int, error)
 }

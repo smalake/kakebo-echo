@@ -53,6 +53,8 @@ func main() {
 	api.GET("/event", eventHandler.GetAll)
 	api.GET("/event/:id", eventHandler.GetOne)
 	api.PUT("/event/:id", eventHandler.Update)
+	api.DELETE("/event/:id", eventHandler.Delete)
+
 	api.GET("/revision", eventHandler.GetRevision)
 
 	privateHandler := private.New(pc)

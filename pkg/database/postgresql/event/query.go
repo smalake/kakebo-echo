@@ -37,5 +37,11 @@ var EventUpdate = `
 	AND group_id
 		IN (SELECT group_id FROM users WHERE uid = $10)
 `
+
+var EventDelete = `
+	DELETE FROM events
+	WHERE group_id = $1
+	AND id = $2
+`
 var GetRevision = "SELECT revision FROM groups WHERE id = $1"
-var UpdateRevision = "UPDATE groups SET revision = revision + 1 WHERE id = $1 RETURNING revision"
+var UpdateRevision = "UPDATE groups SET revision = revision + 1, updated_at = $1 WHERE id = $2 RETURNING revision"

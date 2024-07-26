@@ -69,6 +69,14 @@ func (r eventRepository) Update(tx *sqlx.Tx, e model.EventUpdate, uid string, id
 	return nil
 }
 
+func (r eventRepository) Delete(tx *sqlx.Tx, gid, id int) error {
+	query := event.EventDelete
+	if _, err := tx.Exec(query, gid, id); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r eventRepository) GetRevision(gid int) (int, error) {
 	query := event.GetRevision
 	var revision int
@@ -82,7 +90,7 @@ func (r eventRepository) GetRevision(gid int) (int, error) {
 func (r eventRepository) UpdateRevision(tx *sqlx.Tx, gid int) (int, error) {
 	query := event.UpdateRevision
 	var revision int
-	if err := tx.Get(&revision, query, gid); err != nil {
+	if err := tx.Get(&revision, query, time.Now(), gid); err != nil {
 		return -1, err
 	}
 	return revision, nil
