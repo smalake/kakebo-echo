@@ -6,6 +6,7 @@ import (
 	"kakebo-echo/internal/handler/auth"
 	"kakebo-echo/internal/handler/event"
 	"kakebo-echo/internal/handler/private"
+	"kakebo-echo/internal/handler/setting"
 	"kakebo-echo/pkg/database/postgresql"
 	mdl "kakebo-echo/pkg/middleware"
 
@@ -61,6 +62,9 @@ func main() {
 	api.POST("/private", privateHandler.Create)
 	api.GET("/private", privateHandler.GetAll)
 	api.GET("/private/:id", privateHandler.GetOne)
+
+	settingHandler := setting.New(pc)
+	api.GET("/is-admin", settingHandler.AdminCheck)
 
 	// Start an Echo server.
 	e.Logger.Fatal(e.Start(":8080"))
