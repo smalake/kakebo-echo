@@ -8,6 +8,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type authRepository struct {
@@ -30,43 +32,33 @@ func (r *authRepository) FindUser(uid string) (int, error) {
 	return isAdmin, nil
 }
 
-func (r *authRepository) Register(register *model.RegisterRequest) error {
-	// トランザクション開始
-	db := r.client.GetDB()
-	tx, err := db.Beginx()
-	if err != nil {
-		log.Println("[FATAL] failed to transaction")
-		return err
-	}
-
-	// グループ作成
-	var groupQuery = auth.CreateGroup
+func (r *authRepository) CreateGroup(tx *sqlx.Tx) (int, error) {
+	query := auth.CreateGroup
 	var groupId int
-	err = tx.QueryRowx(groupQuery, time.Now(), time.Now()).Scan(&groupId)
-	if err != nil {
+	if err := tx.QueryRowx(query, time.Now(), time.Now()).Scan(&groupId); err != nil {
 		log.Println("[FATAL] failed to CREATE group")
-		_ = tx.Rollback()
-		return err
+		return -1, err
 	}
+	return groupId, nil
+}
 
-	//ユーザ作成
-	query := auth.RegisterUser
-	_, err = tx.Exec(query, register.Uid, register.Name, groupId, register.Type, time.Now(), time.Now())
-	if err != nil {
-		_ = tx.Rollback()
+func (r *authRepository) CreateUser(tx *sqlx.Tx, register *model.RegisterRequest, groupId int) (int, error) {
+	query := auth.CreateUser
+	var userId int
+	if err := tx.QueryRowx(query, register.Uid, register.Name, groupId, register.Type, time.Now(), time.Now()).Scan(&userId); err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			log.Println("[ERROR] ユーザがすでに登録されています")
-			return errors.ErrUserAlreadyExist
+			return -1, errors.ErrUserAlreadyExist
 		} else {
-			log.Println("[FATAL] ユーザ登録に失敗しました")
-			return err
+			return -1, err
 		}
 	}
+	return userId, nil
+}
 
-	err = tx.Commit()
-	if err != nil {
-		log.Println("[FATAL] failed to commit")
-		_ = tx.Rollback()
+func (r *authRepository) CreateRevision(tx *sqlx.Tx, userId int) error {
+	query := auth.CreateRevision
+	if _, err := tx.Exec(query, userId, time.Now(), time.Now()); err != nil {
 		return err
 	}
 	return nil

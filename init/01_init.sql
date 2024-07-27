@@ -60,3 +60,12 @@ CREATE TABLE patterns (
   created_at TIMESTAMP NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
+
+CREATE TABLE private_revision (
+  id bigserial PRIMARY KEY,
+  user_id bigint NOT NULL,
+  revision bigint NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+);

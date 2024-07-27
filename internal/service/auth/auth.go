@@ -1,17 +1,22 @@
 package auth
 
 import (
+	"context"
 	"kakebo-echo/internal/model"
 	"kakebo-echo/internal/repository/auth"
+	"kakebo-echo/internal/repository/transaction"
 	"kakebo-echo/pkg/errors"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type authService struct {
-	repo auth.AuthRepository
+	repo        auth.AuthRepository
+	transaction transaction.TransactionRepository
 }
 
-func New(repo auth.AuthRepository) AuthService {
-	return &authService{repo: repo}
+func New(repo auth.AuthRepository, transRepo transaction.TransactionRepository) AuthService {
+	return &authService{repo: repo, transaction: transRepo}
 }
 
 // ログイン処理（FirebaseのUIDがusersテーブルに登録されているかチェック）
@@ -25,7 +30,25 @@ func (s *authService) Login(uid string) error {
 
 // ユーザ登録
 func (s *authService) Register(req *model.RegisterRequest) error {
-	return s.repo.Register(req)
+	// トランザクション処理
+	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
+		groupId, err := s.repo.CreateGroup(tx)
+		if err != nil {
+			return err
+		}
+		userId, err := s.repo.CreateUser(tx, req, groupId)
+		if err != nil {
+			return err
+		}
+		err = s.repo.CreateRevision(tx, userId)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // ログアウト
