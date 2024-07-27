@@ -151,9 +151,6 @@ func (s eventService) Update(e model.EventUpdate, uid string, id int) (int, erro
 	}); err != nil {
 		return -1, err
 	}
-	if err != nil {
-		return -1, err
-	}
 	return revision, nil
 }
 
