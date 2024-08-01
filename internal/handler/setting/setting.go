@@ -7,6 +7,7 @@ import (
 	"kakebo-echo/internal/service/setting"
 	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/structs"
+	"kakebo-echo/pkg/util"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -28,14 +29,14 @@ func (h settingHandler) AdminCheck(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
 	isAdmin, err := h.service.AdminCheck(uid)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get check is admin: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"admin": isAdmin}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"admin": isAdmin}})
 
 }

@@ -6,6 +6,7 @@ import (
 	"kakebo-echo/internal/repository/event"
 	"kakebo-echo/internal/repository/transaction"
 	"kakebo-echo/pkg/errors"
+	"kakebo-echo/pkg/util"
 	"log"
 	"time"
 
@@ -21,11 +22,11 @@ func New(repo event.EventRepository, transRepo transaction.TransactionRepository
 	return &eventService{repo: repo, transaction: transRepo}
 }
 
-func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
+func (s eventService) Create(e model.EventCreate, uid string) ([]int, int, error) {
 	// 日付をstring型からdate型へと変換
 	formattedDate, err := time.Parse("2006-01-02T15:04:05.000Z", e.Date)
 	if err != nil {
-		return nil, err
+		return nil, -1, err
 	}
 
 	// event1は必ず存在するためそのまま処理
@@ -40,10 +41,10 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 	event2 := model.Event{}
 
 	// バリデーション
-	checkEvent1, source := eventValidation(event1)
+	checkEvent1, source := util.EventValidation(event1)
 	if !checkEvent1 {
 		log.Printf("[ERROR] event1 %s is bad value", source)
-		return nil, errors.BadRequest
+		return nil, -1, errors.BadRequest
 	}
 
 	// イベントが2件の場合は分割してevent2として処理する
@@ -56,21 +57,22 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 			Date:      formattedDate,
 		}
 		// バリデーション
-		checkEvent2, source := eventValidation(event2)
+		checkEvent2, source := util.EventValidation(event2)
 		if !checkEvent2 {
 			log.Printf("[ERROR] event2 %s is bad value", source)
-			return nil, errors.BadRequest
+			return nil, -1, errors.BadRequest
 		}
 	}
 
 	// uidからgroup_idを取得
 	usid, gid, err := s.repo.GetIDs(uid)
 	if err != nil {
-		return nil, err
+		return nil, -1, err
 	}
 
 	// 追加したカラムのIDを結果として返す
-	var result []int
+	var ids []int
+	var revision int
 
 	// トランザクション処理
 	if err := s.transaction.Transaction(context.TODO(), func(tx *sqlx.Tx) error {
@@ -83,7 +85,8 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 		if err != nil {
 			return err
 		}
-		result = append(result, id1)
+		ids = append(ids, id1)
+		revision = revision1
 		if e.Amount2 > 0 {
 			revision2, err := s.repo.UpdateRevision(tx, gid)
 			if err != nil {
@@ -93,13 +96,14 @@ func (s eventService) Create(e model.EventCreate, uid string) ([]int, error) {
 			if err != nil {
 				return err
 			}
-			result = append(result, id2)
+			ids = append(ids, id2)
+			revision = revision2
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, -1, err
 	}
-	return result, nil
+	return ids, revision, nil
 }
 
 func (s eventService) GetAll(uid string) ([]model.EventResponse, error) {
@@ -175,9 +179,6 @@ func (s eventService) Delete(uid string, id int) (int, error) {
 	}); err != nil {
 		return -1, err
 	}
-	if err != nil {
-		return -1, err
-	}
 	return revision, nil
 }
 
@@ -188,15 +189,4 @@ func (s eventService) GetRevision(uid string) (int, error) {
 		return -1, err
 	}
 	return s.repo.GetRevision(gid)
-}
-
-// イベントの内容についてバリデーション
-func eventValidation(event model.Event) (bool, string) {
-	if event.Amount <= 0 {
-		return false, "amount"
-	}
-	if event.Category < 0 || event.Category > 9 {
-		return false, "category"
-	}
-	return true, ""
 }

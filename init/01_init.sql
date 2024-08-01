@@ -46,6 +46,7 @@ CREATE TABLE privates (
   store_name varchar(255) DEFAULT NULL,
   user_id bigint NOT NULL,
   memo varchar(255) DEFAULT NULL,
+  revision bigint NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT

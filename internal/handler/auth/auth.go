@@ -8,6 +8,7 @@ import (
 	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/errors"
 	"kakebo-echo/pkg/structs"
+	"kakebo-echo/pkg/util"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -31,18 +32,18 @@ func (h *authHandler) Login(ctx echo.Context) error {
 	u := new(model.LoginRequest)
 	if err := ctx.Bind(u); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get Login Request: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	err := h.service.Login(u.Uid)
 	if err != nil {
 		if err == errors.ErrUserNotFound {
 			ctx.Logger().Errorf("[FATAL] User not found in DB: %+v", err)
-			return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusUnauthorized, Error: errors.ErrUserNotFound})
+			return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusUnauthorized, Error: errors.ErrUserNotFound})
 		}
 		ctx.Logger().Errorf("[FATAL] failed to find user: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
 }
 
 func (h *authHandler) Register(ctx echo.Context) error {
@@ -50,17 +51,17 @@ func (h *authHandler) Register(ctx echo.Context) error {
 	r := new(model.RegisterRequest)
 	if err := ctx.Bind(r); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get Register User Request: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	err := h.service.Register(r)
 	if err != nil {
 		if err == errors.ErrUserAlreadyExist {
-			return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusConflict, Error: err})
+			return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusConflict, Error: err})
 		}
 		ctx.Logger().Errorf("[FATAL] failed to create user: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
 }
 
 func (h *authHandler) LoginCheck(ctx echo.Context) error {
@@ -72,10 +73,10 @@ func (h *authHandler) LoginCheck(ctx echo.Context) error {
 	admin, err := h.service.LoginCheck(uid)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to check login: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
 
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"admin": admin}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"admin": admin}})
 }
 
 func (h *authHandler) Logout(ctx echo.Context) error {

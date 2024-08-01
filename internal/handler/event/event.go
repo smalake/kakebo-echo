@@ -8,6 +8,7 @@ import (
 	"kakebo-echo/internal/service/event"
 	"kakebo-echo/pkg/database/postgresql"
 	"kakebo-echo/pkg/structs"
+	"kakebo-echo/pkg/util"
 	"net/http"
 	"strconv"
 
@@ -31,35 +32,35 @@ func (h *eventHandler) Create(ctx echo.Context) error {
 	e := new(model.EventCreate)
 	if err := ctx.Bind(e); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get Create Event Request: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
-	ids, err := h.service.Create(*e, uid)
+	ids, revision, err := h.service.Create(*e, uid)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to create event: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"ids": ids}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"ids": ids, "revision": revision}})
 }
 
 func (h *eventHandler) GetAll(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 
 	events, err := h.service.GetAll(uid)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get events: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"events": events}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"events": events}})
 }
 
 func (h *eventHandler) GetOne(ctx echo.Context) error {
@@ -67,19 +68,19 @@ func (h *eventHandler) GetOne(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if idString == "" {
 		ctx.Logger().Error("[FATAL] faild to get ID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
 	}
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] ID is bad param: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	event, err := h.service.GetOne(uid, id)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get one event: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"event": event}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"event": event}})
 }
 
 func (h *eventHandler) Update(ctx echo.Context) error {
@@ -87,26 +88,26 @@ func (h *eventHandler) Update(ctx echo.Context) error {
 	e := new(model.EventUpdate)
 	if err := ctx.Bind(e); err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to get Update Event Request: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 
 	idString := ctx.Param("id")
 	uid := ctx.Get("uid").(string)
 	if idString == "" {
 		ctx.Logger().Error("[FATAL] faild to get ID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
 	}
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] ID is bad param: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	revision, err := h.service.Update(*e, uid, id)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to update event: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
 }
 
 func (h *eventHandler) Delete(ctx echo.Context) error {
@@ -114,32 +115,32 @@ func (h *eventHandler) Delete(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if idString == "" {
 		ctx.Logger().Error("[FATAL] faild to get ID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: errors.New("faild to get ID")})
 	}
 
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] ID is bad param: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
 	}
 	revision, err := h.service.Delete(uid, id)
 	if err != nil {
 		ctx.Logger().Errorf("[FATAL] failed to delete event: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
 }
 
 func (h *eventHandler) GetRevision(ctx echo.Context) error {
 	uid := ctx.Get("uid").(string)
 	if uid == "" {
 		ctx.Logger().Error("[FATAL] faild to get UID")
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
 	}
 	revision, err := h.service.GetRevision(uid)
 	if err != nil || revision == -1 {
 		ctx.Logger().Errorf("[FATAL] failed to get revision: %+v", err)
-		return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
 	}
-	return structs.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"revision": revision}})
 }

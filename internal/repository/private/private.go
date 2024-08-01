@@ -6,6 +6,8 @@ import (
 	"kakebo-echo/pkg/database/postgresql/private"
 	"log"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type privateRepository struct {
@@ -16,34 +18,20 @@ func New(cl postgresql.ClientInterface) PrivateRepository {
 	return &privateRepository{client: cl}
 }
 
-func (r privateRepository) Create(e model.Private, uid string) error {
-	// トランザクション開始
-	db := r.client.GetDB()
-	tx, err := db.Beginx()
-	if err != nil {
-		log.Println("[FATAL] failed to transaction")
-		return err
-	}
-	// イベントの追加
+func (r privateRepository) Create(tx *sqlx.Tx, e model.Event, revision int, uid string) (int, error) {
 	query := private.PrivateCreate
-	_, err = tx.Exec(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, time.Now(), time.Now())
+	var id int
+	err := tx.QueryRow(query, e.Amount, e.Category, e.StoreName, e.Memo, e.Date, uid, revision, time.Now(), time.Now()).Scan(&id)
 	if err != nil {
-		_ = tx.Rollback()
-		log.Println("[FATAL] イベントの新規作成に失敗しました")
-		return err
+		log.Println("[FATAL] プライベートイベントの新規作成に失敗しました")
+		return -1, err
 	}
-	err = tx.Commit()
-	if err != nil {
-		log.Println("[FATAL] failed to commit")
-		_ = tx.Rollback()
-		return err
-	}
-	return nil
+	return id, nil
 }
 
-func (r privateRepository) GetAll(uid string) ([]model.PrivateGet, error) {
+func (r privateRepository) GetAll(uid string) ([]model.EventGet, error) {
 	query := private.PrivateGetAll
-	privates := []model.PrivateGet{}
+	privates := []model.EventGet{}
 	db := r.client.GetDB()
 	if err := db.Select(&privates, query, uid); err != nil {
 		return nil, err
@@ -51,12 +39,47 @@ func (r privateRepository) GetAll(uid string) ([]model.PrivateGet, error) {
 	return privates, nil
 }
 
-func (r privateRepository) GetOne(uid string, id int) (model.PrivateGet, error) {
+func (r privateRepository) GetOne(uid string, id int) (model.PrivateOne, error) {
 	query := private.PrivateGetOne
-	private := model.PrivateGet{}
+	private := model.PrivateOne{}
 	db := r.client.GetDB()
-	if err := db.Get(&private, query, uid, id); err != nil {
+	if err := db.Get(&private, query, id, uid); err != nil {
 		return private, err
 	}
 	return private, nil
+}
+
+func (r privateRepository) Update(tx *sqlx.Tx, e model.EventUpdate, uid string, id, revision int) error {
+	query := private.PrivateUpdate
+	if _, err := tx.Exec(query, e.Amount, e.Category, e.Memo, e.StoreName, e.Date, time.Now(), revision, id, uid); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r privateRepository) Delete(tx *sqlx.Tx, uid string, id int) error {
+	query := private.PrivateDelete
+	if _, err := tx.Exec(query, id, uid); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r privateRepository) GetRevision(uid string) (int, error) {
+	query := private.GetRevision
+	var revision int
+	db := r.client.GetDB()
+	if err := db.Get(&revision, query, uid); err != nil {
+		return -1, err
+	}
+	return revision, nil
+}
+
+func (r privateRepository) UpdateRevision(tx *sqlx.Tx, uid string) (int, error) {
+	query := private.UpdateRevision
+	var revision int
+	if err := tx.Get(&revision, query, time.Now(), uid); err != nil {
+		return -1, err
+	}
+	return revision, nil
 }

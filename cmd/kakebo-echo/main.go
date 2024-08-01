@@ -62,6 +62,10 @@ func main() {
 	api.POST("/private", privateHandler.Create)
 	api.GET("/private", privateHandler.GetAll)
 	api.GET("/private/:id", privateHandler.GetOne)
+	api.PUT("/private/:id", privateHandler.Update)
+	api.DELETE("/private/:id", privateHandler.Delete)
+
+	api.GET("/revision-private", privateHandler.GetRevision)
 
 	settingHandler := setting.New(pc)
 	api.GET("/is-admin", settingHandler.AdminCheck)
