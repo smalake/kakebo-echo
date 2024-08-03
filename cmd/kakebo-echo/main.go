@@ -69,6 +69,8 @@ func main() {
 
 	settingHandler := setting.New(pc)
 	api.GET("/is-admin", settingHandler.AdminCheck)
+	api.GET("/display-name", settingHandler.GetName)
+	api.PUT("/display-name", settingHandler.UpdateName)
 
 	// Start an Echo server.
 	e.Logger.Fatal(e.Start(":8080"))

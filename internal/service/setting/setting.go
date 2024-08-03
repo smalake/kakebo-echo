@@ -17,3 +17,11 @@ func New(repo setting.SettingRepository, transRepo transaction.TransactionReposi
 func (s settingService) AdminCheck(uid string) (int, error) {
 	return s.repo.GetAdminByUID(uid)
 }
+
+func (s settingService) GetName(uid string) (string, error) {
+	return s.repo.GetName(uid)
+}
+
+func (s settingService) UpdateName(uid, name string) error {
+	return s.repo.UpdateName(uid, name)
+}

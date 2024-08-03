@@ -40,3 +40,42 @@ func (h settingHandler) AdminCheck(ctx echo.Context) error {
 	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"admin": isAdmin}})
 
 }
+
+func (h settingHandler) GetName(ctx echo.Context) error {
+	uid := ctx.Get("uid").(string)
+	if uid == "" {
+		ctx.Logger().Error("[FATAL] faild to get UID")
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+	}
+	name, err := h.service.GetName(uid)
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to get display name: %+v", err)
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+	}
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK, Data: map[string]interface{}{"name": name}})
+
+}
+
+func (h settingHandler) UpdateName(ctx echo.Context) error {
+	uid := ctx.Get("uid").(string)
+	if uid == "" {
+		ctx.Logger().Error("[FATAL] faild to get UID")
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: errors.New("faild to get UID")})
+	}
+	// POSTから新規登録するイベントの情報を取得
+	type updateName struct {
+		Name string `json:"name"`
+	}
+	e := new(updateName)
+	if err := ctx.Bind(e); err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to get Update Name Request: %+v", err)
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusBadRequest, Error: err})
+	}
+	err := h.service.UpdateName(uid, e.Name)
+	if err != nil {
+		ctx.Logger().Errorf("[FATAL] failed to update display name: %+v", err)
+		return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusInternalServerError, Error: err})
+	}
+	return util.ResponseHandler(ctx, structs.HttpResponse{Code: http.StatusOK})
+
+}
